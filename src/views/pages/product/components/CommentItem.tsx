@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { MouseEvent, useEffect, useState } from 'react'
 
 // ** Next Imports
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 
 // ** Mui
 import { Avatar, Box, Button, IconButton, Menu, MenuItem, Typography } from '@mui/material'

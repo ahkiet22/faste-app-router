@@ -5,18 +5,18 @@
 import { ReactNode, useEffect } from "react";
 
 // ** Next
-import { useRouter } from "next/router";
+import { usePathname, useRouter } from "next/navigation";
 
 // ** Types
 import BlankLayout from "src/views/layouts/BlankLayout";
-import NotAuthorized from "src/pages/401";
+import NotAuthorized from "src/views/pages/not-authorized";
 import { useAuth } from "src/hooks/useAuth";
-import { AbilityContext } from "../acl/Can";
 
 // ** Configs
 import { PERMISSIONS } from "src/configs/permission";
 import { ROUTE_CONFIG } from "src/configs/route";
 import { buildAbilityFor, type ACLObj, AppAbility } from "src/configs/acl";
+import { AbilityContext } from "src/components/acl/Can";
 
 interface AclGuardProps {
   children: ReactNode;
@@ -43,12 +43,13 @@ const AclGuard = (props: AclGuardProps) => {
       : auth.user?.role?.permissions
     : [];
   const router = useRouter();
+  const pathName = usePathname();
 
   useEffect(() => {
-    if (router.route === "/") {
+    if (pathName === "/" || pathName === "en/") {
       router.push(ROUTE_CONFIG.HOME);
     }
-  }, [router]);
+  }, [pathName]);
 
   let ability: AppAbility;
 
@@ -59,8 +60,10 @@ const AclGuard = (props: AclGuardProps) => {
   // if gues guard or no guard is tru or error page
   if (
     guestGuard ||
-    router.route === "/500" ||
-    router.route === "/404" ||
+    pathName === "/500" ||
+    pathName === "/404" ||
+    pathName === "en/500" ||
+    pathName === "en/404" ||
     !authGuard
   ) {
     if (auth.user && ability) {

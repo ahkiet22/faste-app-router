@@ -1,7 +1,7 @@
 'use client'
 
 // ** Next
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 
 // ** React
 import { useEffect, useState } from 'react'

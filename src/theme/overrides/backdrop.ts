@@ -1,3 +1,4 @@
+"use client"
 // ** Type Import
 import { OwnerStateThemeType } from '.'
 

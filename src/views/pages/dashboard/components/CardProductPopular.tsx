@@ -2,7 +2,7 @@
 
 import { Box, MenuItem, Typography, useTheme } from '@mui/material'
 import Image from 'next/image'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { useTranslation } from 'react-i18next'
 import { ROUTE_CONFIG } from 'src/configs/route'
 import { formatNumberToLocal } from 'src/utils'

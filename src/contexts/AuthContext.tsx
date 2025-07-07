@@ -4,7 +4,7 @@
 import { createContext, useState, ReactNode, useEffect } from "react";
 
 // ** Next Import
-import { useRouter } from "next/router";
+import { usePathname, useRouter } from "next/navigation";
 
 // ** Helpers
 import instanceAxios from "src/helpers/axios";
@@ -69,12 +69,13 @@ const AuthProvider = ({ children }: Props) => {
 
   // ** Hooks
   const router = useRouter();
-
-  // ** Redux
-  const dispatch: AppDispatch = useDispatch();
+  const pathName = usePathname();
 
   // ** Translate
   const { t } = useTranslation();
+
+  // ** Redux
+  const dispatch: AppDispatch = useDispatch();
 
   useEffect(() => {
     const initAuth = async (): Promise<void> => {
@@ -93,7 +94,7 @@ const AuthProvider = ({ children }: Props) => {
             clearLocalUserData();
             setUser(null);
             setLoading(false);
-            if (!router.pathname.includes("login")) {
+            if (!pathName.includes("login")) {
               router.replace("/login");
             }
           });
@@ -125,7 +126,8 @@ const AuthProvider = ({ children }: Props) => {
           setTemporaryToken(response.data.access_token);
         }
         toast.success(t("Login_success"));
-        const returnUrl = router.query.returnUrl;
+        // const returnUrl = router.query.returnUrl;
+        const returnUrl = "/";
         setUser({ ...response.data.user });
         const redirectURL = returnUrl && returnUrl !== "/" ? returnUrl : "/";
         router.replace(redirectURL as string);
@@ -157,7 +159,8 @@ const AuthProvider = ({ children }: Props) => {
 
         toast.success(t("Login_success"));
 
-        const returnUrl = router.query.returnUrl;
+        // const returnUrl = router.query.returnUrl;
+        const returnUrl = "/";
         setUser({ ...response.data.user });
         const redirectURL = returnUrl && returnUrl !== "/" ? returnUrl : "/";
         router.replace(redirectURL as string);
@@ -189,7 +192,8 @@ const AuthProvider = ({ children }: Props) => {
 
         toast.success(t("Login_success"));
 
-        const returnUrl = router.query.returnUrl;
+        // const returnUrl = router.query.returnUrl;
+        const returnUrl = "/";
         setUser({ ...response.data.user });
         const redirectURL = returnUrl && returnUrl !== "/" ? returnUrl : "/";
 
@@ -208,12 +212,13 @@ const AuthProvider = ({ children }: Props) => {
 
       // signOut()
 
-      if (!LIST_PAGE_PUBLIC?.some((item) => router.asPath?.startsWith(item))) {
-        if (router.asPath !== "/") {
-          router.replace({
-            pathname: ROUTE_CONFIG.LOGIN,
-            query: { returnUrl: router.asPath },
-          });
+      if (!LIST_PAGE_PUBLIC?.some((item) => pathName?.startsWith(item))) {
+        if (pathName !== "/") {
+          router.replace(ROUTE_CONFIG.LOGIN);
+          // router.replace({
+          //   pathname: ROUTE_CONFIG.LOGIN,
+          //   query: { returnUrl: router.asPath },
+          // });
         } else {
           router.replace(ROUTE_CONFIG.LOGIN);
         }

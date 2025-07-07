@@ -1,7 +1,7 @@
 'use client'
 
 // ** React
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import React, { useCallback, useMemo, useState } from 'react'
 
 // ** Mui

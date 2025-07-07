@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
-import TranslationProvider from "@/app/[locale]/TranslationProvider";
-import initTranslations from "@/configs/i18n";
+import TranslationProvider from "src/app/[locale]/TranslationProvider";
+import initTranslations from "src/configs/i18n";
+import { StoreWrapper } from "src/hoc/StoreWrapper";
 
 const i18nNamespaces = ["translation"];
 
@@ -21,7 +21,7 @@ export default async function Layout({
       resources={resources}
       namespaces={i18nNamespaces}
     >
-      {children}
+      <StoreWrapper>{children}</StoreWrapper>
     </TranslationProvider>
   );
 }

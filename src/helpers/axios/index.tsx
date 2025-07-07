@@ -22,7 +22,7 @@ import {
 import { FC, useEffect } from 'react'
 
 // ** Next
-import { NextRouter, useRouter } from 'next/router'
+import { NextRouter, useRouter } from 'next/navigation'
 
 // ** Type
 import { UserDataType } from 'src/contexts/types'

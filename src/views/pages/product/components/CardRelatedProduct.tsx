@@ -3,7 +3,7 @@
 // ** React
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 
 // ** Mui
 import { styled, useTheme } from '@mui/material/styles'

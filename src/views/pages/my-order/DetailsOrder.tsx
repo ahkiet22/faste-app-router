@@ -2,7 +2,7 @@
 
 // ** Next
 import { NextPage } from 'next'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 
 // ** React
 import { useCallback, useEffect, useMemo, useState } from 'react'

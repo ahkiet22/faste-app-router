@@ -35,7 +35,7 @@ import { getLocalProductCart } from 'src/helpers/storage'
 import { updateProductToCart } from 'src/stores/order-product'
 import NoData from 'src/components/no-data'
 import { ROUTE_CONFIG } from 'src/configs/route'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 
 type TProps = {}
 

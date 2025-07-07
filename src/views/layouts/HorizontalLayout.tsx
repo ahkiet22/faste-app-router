@@ -4,7 +4,7 @@
 import * as React from 'react'
 
 // ** Next
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { NextPage } from 'next'
 import Link from 'next/link'
 

@@ -4,7 +4,7 @@
 import { NextPage } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { signIn, useSession } from 'next-auth/react'
 
 // ** React

@@ -1,3 +1,4 @@
+"use client"
 // ** Type Import
 import { hexToRGBA } from 'src/utils/hex-to-rgba'
 import { OwnerStateThemeType } from '.'

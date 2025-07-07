@@ -1,3 +1,4 @@
+"use client"
 // ** MUI Imports
 import { Theme } from '@mui/material/styles'
 import { ComponentsPropsList } from '@mui/material'

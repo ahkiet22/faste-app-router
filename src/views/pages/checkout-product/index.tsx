@@ -44,7 +44,7 @@ import { useAuth } from 'src/hooks/useAuth'
 
 // ** Other
 import { TItemOrderProduct } from 'src/types/order-product'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
 import Swal from 'sweetalert2'
 import { getLocalProductCart, setLocalProductToCart } from 'src/helpers/storage'

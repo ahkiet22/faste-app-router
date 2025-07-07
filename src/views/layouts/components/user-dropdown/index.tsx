@@ -2,7 +2,7 @@
 
 // ** React
 import * as React from 'react'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 
 // ** Next
 import Image from 'next/image'
