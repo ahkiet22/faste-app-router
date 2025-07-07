@@ -19,7 +19,38 @@ type TProps = {
   listRelatedProduct: TProduct[];
 };
 
-const Index: NextPage<TProps> = ({ productData, listRelatedProduct }) => {
+async function getDetailsProduct(slugId: string) {
+  try {
+    const [res, resRelated] = await Promise.all([
+      getDetailsProductPublicBySlug(slugId, true),
+      getListRelatedProductBySlug({ params: { slug: slugId } }),
+    ]);
+
+    const productData = res?.data;
+    const listRelatedProduct = resRelated?.data?.products;
+
+    if (!productData?._id) {
+      return {
+        notFound: true,
+      };
+    }
+
+    return {
+      productData: productData,
+      listRelatedProduct,
+    };
+  } catch (error) {
+    return {
+      productData: {},
+      listRelatedProduct: [],
+    };
+  }
+}
+
+const Index = async (params: { productId: string }) => {
+  const { productData, listRelatedProduct } = await getDetailsProduct(
+    params.productId,
+  );
   const description = getTextFromHTML(productData.description);
 
   return (
@@ -63,37 +94,3 @@ const Index: NextPage<TProps> = ({ productData, listRelatedProduct }) => {
 };
 
 export default Index;
-
-export async function getServerSideProps(context: any) {
-  try {
-    const slugId = context.query?.productId;
-
-    const [res, resRelated] = await Promise.all([
-      getDetailsProductPublicBySlug(slugId, true),
-      getListRelatedProductBySlug({ params: { slug: slugId } }),
-    ]);
-
-    const productData = res?.data;
-    const listRelatedProduct = resRelated?.data?.products;
-
-    if (!productData?._id) {
-      return {
-        notFound: true,
-      };
-    }
-
-    return {
-      props: {
-        productData: productData,
-        listRelatedProduct,
-      },
-    };
-  } catch (error) {
-    return {
-      props: {
-        productData: {},
-        listRelatedProduct: [],
-      },
-    };
-  }
-}
