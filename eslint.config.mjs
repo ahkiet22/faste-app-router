@@ -9,8 +9,60 @@ const compat = new FlatCompat({
   baseDirectory: __dirname,
 });
 
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+export default [
+  ...compat.extends("next/core-web-vitals", "next/typescript", "prettier"),
+  {
+    plugins: {
+      import: require("eslint-plugin-import"),
+    },
+    settings: {
+      "import/parsers": {
+        "@typescript-eslint/parser": [".ts", ".tsx"],
+      },
+      "import/resolver": {
+        typescript: {
+          alwaysTryTypes: true,
+          project: ["./tsconfig.json"],
+        },
+      },
+    },
+    rules: {
+      "react/display-name": "off",
+      "@next/next/no-img-element": "off",
+      "react/no-unescaped-entities": "off",
+      "import/no-anonymous-default-export": "off",
+      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/ban-ts-comment": "off",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "lines-around-comment": [
+        "error",
+        {
+          beforeLineComment: true,
+          beforeBlockComment: true,
+          allowBlockStart: true,
+          allowClassStart: true,
+          allowObjectStart: true,
+          allowArrayStart: true,
+        },
+      ],
+      "newline-before-return": "error",
+      "import/newline-after-import": ["error", { count: 1 }],
+      "@typescript-eslint/ban-types": [
+        "error",
+        {
+          extendDefaults: true,
+          types: {
+            "{}": false,
+          },
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/iconify-bundle/*"],
+    rules: {
+      "@typescript-eslint/no-var-requires": "off",
+    },
+  },
 ];
-
-export default eslintConfig;
