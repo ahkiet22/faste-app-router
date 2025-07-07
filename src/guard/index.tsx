@@ -1,4 +1,4 @@
-import FallbackSpinner from "@/components/fall-back";
+import FallbackSpinner from "src/components/fall-back";
 import AuthGuard from "./AuthGuard";
 import GuestGuard from "./GuestGuard";
 import NoGuard from "./NoGuard";
