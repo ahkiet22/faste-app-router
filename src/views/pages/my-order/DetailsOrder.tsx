@@ -1,239 +1,277 @@
-'use client'
+"use client";
 
 // ** Next
-import { NextPage } from 'next'
-import { useRouter } from 'next/navigation'
+import { NextPage } from "next";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // ** React
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 // ** Mui
-import { Avatar, Box, Button, Divider, Typography, useTheme } from '@mui/material'
+import {
+  Avatar,
+  Box,
+  Button,
+  Divider,
+  Typography,
+  useTheme,
+} from "@mui/material";
 
 // ** Components
-import ConfirmationDialog from 'src/components/confirmation-dialog'
-import Spinner from 'src/components/spinner'
-import Icon from 'src/components/Icon'
-import ModalWriteReview from './components/ModalWriteReview'
+import ConfirmationDialog from "src/components/confirmation-dialog";
+import Spinner from "src/components/spinner";
+import Icon from "src/components/Icon";
+import ModalWriteReview from "./components/ModalWriteReview";
 
 // ** Translate
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from "react-i18next";
 
 // ** Redux
-import { cancelOrderProductOfMeAsync } from 'src/stores/order-product/actions'
-import { useDispatch, useSelector } from 'react-redux'
-import { AppDispatch, RootState } from 'src/stores'
-import { resetInitialState, updateProductToCart } from 'src/stores/order-product'
-import { resetInitialState as resetInitialReview } from 'src/stores/reviews'
-
+import { cancelOrderProductOfMeAsync } from "src/stores/order-product/actions";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "src/stores";
+import {
+  resetInitialState,
+  updateProductToCart,
+} from "src/stores/order-product";
+import { resetInitialState as resetInitialReview } from "src/stores/reviews";
 
 // ** Other
-import toast from 'react-hot-toast'
-import { getLocalProductCart, setLocalProductToCart } from 'src/helpers/storage'
+import toast from "react-hot-toast";
+import {
+  getLocalProductCart,
+  setLocalProductToCart,
+} from "src/helpers/storage";
 
 // ** Services
-import { getDetailsOrderProductByMe } from 'src/services/order-product'
-import { createURLpaymentVNPay } from 'src/services/payment'
-import { getAllPaymentTypes } from 'src/services/payment-type'
+import { getDetailsOrderProductByMe } from "src/services/order-product";
+import { createURLpaymentVNPay } from "src/services/payment";
+import { getAllPaymentTypes } from "src/services/payment-type";
 
 // ** Types
-import { TItemOrderProduct, TItemOrderProductMe, TItemProductMe } from 'src/types/order-product'
+import {
+  TItemOrderProduct,
+  TItemOrderProductMe,
+  TItemProductMe,
+} from "src/types/order-product";
 
 // ** Hooks
-import { useAuth } from 'src/hooks/useAuth'
+import { useAuth } from "src/hooks/useAuth";
 
 // ** Config
-import { ROUTE_CONFIG } from 'src/configs/route'
-import { STATUS_ORDER_PRODUCT } from 'src/configs/orderProduct'
-import { PAYMENT_TYPES } from 'src/configs/payment'
+import { ROUTE_CONFIG } from "src/configs/route";
+import { STATUS_ORDER_PRODUCT } from "src/configs/orderProduct";
+import { PAYMENT_TYPES } from "src/configs/payment";
 
 // ** Utils
-import { formatDate } from 'src/utils/date'
-import { hexToRGBA } from 'src/utils/hex-to-rgba'
-import { convertUpdateMultipleProductsCart, formatNumberToLocal } from 'src/utils'
+import { formatDate } from "src/utils/date";
+import { hexToRGBA } from "src/utils/hex-to-rgba";
+import {
+  convertUpdateMultipleProductsCart,
+  createUrlQuery,
+  formatNumberToLocal,
+} from "src/utils";
 
-type TProps = {}
+type TProps = {};
 
 const MyOrderDetailsPage: NextPage<TProps> = () => {
   // State
-  const [isLoading, setIsLoading] = useState(false)
-  const [dataOrder, setDataOrder] = useState<TItemOrderProductMe>({} as any)
-  const [optionPayments, setOptionPayments] = useState<{ label: string; value: string; type: string }[]>([])
-  const [openCancel, setOpenCancel] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
+  const [dataOrder, setDataOrder] = useState<TItemOrderProductMe>({} as any);
+  const [optionPayments, setOptionPayments] = useState<
+    { label: string; value: string; type: string }[]
+  >([]);
+  const [openCancel, setOpenCancel] = useState(false);
   const [openReview, setOpenReview] = useState({
     open: false,
-    userId: '',
-    productId: ''
-  })
+    userId: "",
+    productId: "",
+  });
 
   // ** Hooks
-  const { t, i18n } = useTranslation()
-  const router = useRouter()
-  const orderId = router.query.orderId as string
-  const { user } = useAuth()
-  const PAYMENT_DATA = PAYMENT_TYPES()
+  const { t, i18n } = useTranslation();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const orderId = searchParams.get("orderId") as string;
+  const { user } = useAuth();
+  const PAYMENT_DATA = PAYMENT_TYPES();
 
   // ** theme
-  const theme = useTheme()
+  const theme = useTheme();
 
   // ** redux
-  const dispatch: AppDispatch = useDispatch()
-  const { isSuccessCancelMe, orderItems, isErrorCancelMe, messageErrorCancelMe } = useSelector(
-    (state: RootState) => state.orderProduct
-  )
+  const dispatch: AppDispatch = useDispatch();
+  const {
+    isSuccessCancelMe,
+    orderItems,
+    isErrorCancelMe,
+    messageErrorCancelMe,
+  } = useSelector((state: RootState) => state.orderProduct);
 
   const {
     isSuccessCreate,
     isErrorCreate,
     messageErrorCreate,
-    isLoading: loadingReview
-  } = useSelector((state: RootState) => state.reviews)
+    isLoading: loadingReview,
+  } = useSelector((state: RootState) => state.reviews);
 
   // ** fetch API
 
   const handleConfirmCancel = useCallback(() => {
-    dispatch(cancelOrderProductOfMeAsync(dataOrder._id))
-  }, [dataOrder._id])
+    dispatch(cancelOrderProductOfMeAsync(dataOrder._id));
+  }, [dataOrder._id]);
 
   // ** handle
   const handleCloseDialog = useCallback(() => {
-    setOpenCancel(false)
-  }, [])
+    setOpenCancel(false);
+  }, []);
 
   const handleGetDetailsOrdersOfMe = async () => {
-    setIsLoading(true)
-    await getDetailsOrderProductByMe(orderId).then(res => {
-      setDataOrder(res?.data)
-      setIsLoading(false)
-    })
-  }
+    setIsLoading(true);
+    await getDetailsOrderProductByMe(orderId).then((res) => {
+      setDataOrder(res?.data);
+      setIsLoading(false);
+    });
+  };
   const handleGetListPaymentMethod = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     await getAllPaymentTypes({ params: { limit: -1, page: -1 } })
-      .then(res => {
+      .then((res) => {
         if (res.data) {
           setOptionPayments(
-            res?.data?.paymentTypes?.map((item: { name: string; _id: string; type: string }) => ({
-              label: item.name,
-              value: item._id,
-              type: item.type
-            }))
-          )
+            res?.data?.paymentTypes?.map(
+              (item: { name: string; _id: string; type: string }) => ({
+                label: item.name,
+                value: item._id,
+                type: item.type,
+              }),
+            ),
+          );
         }
-        setIsLoading(false)
+        setIsLoading(false);
       })
-      .catch(e => {
-        setIsLoading(false)
-      })
-  }
+      .catch((e) => {
+        setIsLoading(false);
+      });
+  };
 
   useEffect(() => {
     if (isSuccessCancelMe) {
-      handleCloseDialog()
+      handleCloseDialog();
     }
-  }, [isSuccessCancelMe])
+  }, [isSuccessCancelMe]);
 
   const handleUpdateProductToCart = (items: TItemOrderProduct[]) => {
-    const productCart = getLocalProductCart()
-    const parseData = productCart ? JSON.parse(productCart) : {}
+    const productCart = getLocalProductCart();
+    const parseData = productCart ? JSON.parse(productCart) : {};
 
-    const listOrderItems = convertUpdateMultipleProductsCart(orderItems, items)
+    const listOrderItems = convertUpdateMultipleProductsCart(orderItems, items);
 
     if (user) {
       dispatch(
         updateProductToCart({
-          orderItems: listOrderItems
-        })
-      )
-      setLocalProductToCart({ ...parseData, [user?._id]: listOrderItems })
+          orderItems: listOrderItems,
+        }),
+      );
+      setLocalProductToCart({ ...parseData, [user?._id]: listOrderItems });
     }
-  }
+  };
 
   const handleBuyAgain = () => {
     handleUpdateProductToCart(
-      dataOrder.orderItems.map(item => ({
+      dataOrder.orderItems.map((item) => ({
         name: item.name,
         amount: item.amount,
         image: item.image,
         price: item.price,
         discount: item.discount,
         product: item?.product?._id,
-        slug: item?.product?.slug
-      }))
-    )
+        slug: item?.product?.slug,
+      })),
+    );
     router.push(
-      {
-        pathname: ROUTE_CONFIG.MY_CART,
-        query: {
-          selected: dataOrder?.orderItems?.map((item: TItemProductMe) => item?.product?._id)
-        }
-      },
-      ROUTE_CONFIG.MY_CART
-    )
-  }
+      ROUTE_CONFIG.MY_CART +
+        "?" +
+        createUrlQuery(
+          "selected",
+          dataOrder?.orderItems?.map(
+            (item: TItemProductMe) => item?.product?._id,
+          ),
+        ),
+    );
+    // router.push(
+    //   {
+    //     pathname: ROUTE_CONFIG.MY_CART,
+    //     query: {
+    //       selected: dataOrder?.orderItems?.map((item: TItemProductMe) => item?.product?._id)
+    //     }
+    //   },
+    //   ROUTE_CONFIG.MY_CART
+    // )
+  };
 
   const handleCloseReview = useCallback(() => {
-    setOpenReview({ open: false, productId: '', userId: '' })
-  }, [])
+    setOpenReview({ open: false, productId: "", userId: "" });
+  }, []);
 
   const handlePaymentVNPay = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     await createURLpaymentVNPay({
       totalPrice: dataOrder.totalPrice,
       orderId: dataOrder?._id,
-      language: i18n.language === 'vi' ? 'vn' : i18n.language
-    }).then(res => {
+      language: i18n.language === "vi" ? "vn" : i18n.language,
+    }).then((res) => {
       if (res?.data) {
-        window.open(res?.data, '_blank')
+        window.open(res?.data, "_blank");
       }
-      setIsLoading(false)
-    })
-  }
+      setIsLoading(false);
+    });
+  };
 
   const handlePaymentTypeOrder = (type: string) => {
     switch (type) {
       case PAYMENT_DATA.VN_PAYMENT.value: {
-        handlePaymentVNPay()
-        break
+        handlePaymentVNPay();
+        break;
       }
       default:
-        break
+        break;
     }
-  }
+  };
 
   const memeDisabledBuyAgain = useMemo(() => {
-    return dataOrder?.orderItems?.some(item => !item.product.countInStock)
-  }, [dataOrder?.orderItems])
+    return dataOrder?.orderItems?.some((item) => !item.product.countInStock);
+  }, [dataOrder?.orderItems]);
 
   useEffect(() => {
     if (orderId) {
-      handleGetDetailsOrdersOfMe()
-      handleGetListPaymentMethod()
+      handleGetDetailsOrdersOfMe();
+      handleGetListPaymentMethod();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderId])
+  }, [orderId]);
 
   useEffect(() => {
     if (isSuccessCancelMe) {
-      handleGetDetailsOrdersOfMe()
-      dispatch(resetInitialState())
+      handleGetDetailsOrdersOfMe();
+      dispatch(resetInitialState());
     } else if (isErrorCancelMe && messageErrorCancelMe) {
-      toast.error(t('Cancel_order_error'))
-      dispatch(resetInitialState())
+      toast.error(t("Cancel_order_error"));
+      dispatch(resetInitialState());
     }
-  }, [isSuccessCancelMe, isErrorCancelMe, messageErrorCancelMe])
+  }, [isSuccessCancelMe, isErrorCancelMe, messageErrorCancelMe]);
 
   useEffect(() => {
     if (isSuccessCreate) {
-      handleGetDetailsOrdersOfMe()
-      toast.success(t('Write_review_success'))
-      dispatch(resetInitialReview())
-      handleCloseReview()
+      handleGetDetailsOrdersOfMe();
+      toast.success(t("Write_review_success"));
+      dispatch(resetInitialReview());
+      handleCloseReview();
     } else if (isErrorCreate && messageErrorCreate) {
-      toast.error(t('Write_review_error'))
-      dispatch(resetInitialReview())
+      toast.error(t("Write_review_error"));
+      dispatch(resetInitialReview());
     }
-  }, [isSuccessCreate, isErrorCreate, messageErrorCreate])
+  }, [isSuccessCreate, isErrorCreate, messageErrorCreate]);
 
   return (
     <>
@@ -249,129 +287,180 @@ const MyOrderDetailsPage: NextPage<TProps> = () => {
         handleClose={handleCloseDialog}
         handleCancel={handleCloseDialog}
         handleConfirm={handleConfirmCancel}
-        title={t('Title_cancel_order')}
-        description={t('Confirm_cancel_order')}
+        title={t("Title_cancel_order")}
+        description={t("Confirm_cancel_order")}
       />
       <Box
         sx={{
           backgroundColor: theme.palette.background.paper,
-          padding: '40px',
-          width: '100%',
-          borderRadius: '15px'
+          padding: "40px",
+          width: "100%",
+          borderRadius: "15px",
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, gap: 2, alignItems: 'center' }}>
-          <Button startIcon={<Icon icon='fluent-mdl2:chrome-back' />} onClick={() => router.back()}>
-            {t('Back')}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            mb: 2,
+            gap: 2,
+            alignItems: "center",
+          }}
+        >
+          <Button
+            startIcon={<Icon icon="fluent-mdl2:chrome-back" />}
+            onClick={() => router.back()}
+          >
+            {t("Back")}
           </Button>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             {dataOrder?.status === 2 && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Icon icon='carbon:delivery' />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Icon icon="carbon:delivery" />
                 <Typography>
-                  <span style={{ color: theme.palette.success.main }}>{t('Order_has_been_delivery')}</span>
-                  <span>{' | '}</span>
+                  <span style={{ color: theme.palette.success.main }}>
+                    {t("Order_has_been_delivery")}
+                  </span>
+                  <span>{" | "}</span>
                 </Typography>
               </Box>
             )}
-            <Typography sx={{ textTransform: 'uppercase', color: theme.palette.primary.main, fontWeight: 600 }}>
+            <Typography
+              sx={{
+                textTransform: "uppercase",
+                color: theme.palette.primary.main,
+                fontWeight: 600,
+              }}
+            >
               {t(`${(STATUS_ORDER_PRODUCT as any)[dataOrder?.status]?.label}`)}
             </Typography>
           </Box>
         </Box>
         <Divider />
-        <Box mt={2} mb={2} sx={{ display: 'flex', flexDirection: 'column', gap: 4, cursor: 'pointer' }}>
+        <Box
+          mt={2}
+          mb={2}
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+            cursor: "pointer",
+          }}
+        >
           {dataOrder?.orderItems?.map((item: TItemProductMe) => {
             return (
-              <Box key={item?.product?._id} sx={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+              <Box
+                key={item?.product?._id}
+                sx={{ display: "flex", alignItems: "flex-start", gap: "8px" }}
+              >
                 <Box
                   sx={{
-                    border: `1px solid rgba(${theme.palette.customColors.main}, 0.2)`
+                    border: `1px solid rgba(${theme.palette.customColors.main}, 0.2)`,
                   }}
                 >
                   <Avatar
                     sx={{
-                      width: '80px',
-                      height: '80px'
+                      width: "80px",
+                      height: "80px",
                     }}
                     src={item.image}
-                    variant='rounded'
+                    variant="rounded"
                   />
                 </Box>
                 <Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", gap: "20px" }}
+                  >
                     <Typography
                       sx={{
-                        fontSize: '18px',
-                        textOverflow: 'ellipsis',
-                        overflow: 'hidden',
-                        display: 'block'
+                        fontSize: "18px",
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                        display: "block",
                       }}
                     >
                       {item.name}
                     </Typography>
                     {+dataOrder.status === +STATUS_ORDER_PRODUCT[2].value && (
                       <Button
-                        startIcon={<Icon icon='material-symbols:rate-review-outline' />}
+                        startIcon={
+                          <Icon icon="material-symbols:rate-review-outline" />
+                        }
                         onClick={() =>
-                          setOpenReview({ open: true, productId: item?.product?._id, userId: user ? user?._id : '' })
+                          setOpenReview({
+                            open: true,
+                            productId: item?.product?._id,
+                            userId: user ? user?._id : "",
+                          })
                         }
                         sx={{
-                          backgroundColor: '#FF8C00',
-                          color: '#fff',
-                          '&:hover': {
-                            backgroundColor: '#FF6A00'
-                          }
+                          backgroundColor: "#FF8C00",
+                          color: "#fff",
+                          "&:hover": {
+                            backgroundColor: "#FF6A00",
+                          },
                         }}
                       >
-                        {t('Write_review')}
+                        {t("Write_review")}
                       </Button>
                     )}
                   </Box>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     <Typography
-                      variant='h6'
+                      variant="h6"
                       sx={{
-                        color: item.discount > 0 ? theme.palette.error.main : theme.palette.primary.main,
-                        textDecoration: item.discount > 0 ? 'line-through' : 'normal',
-                        fontSize: '14px'
+                        color:
+                          item.discount > 0
+                            ? theme.palette.error.main
+                            : theme.palette.primary.main,
+                        textDecoration:
+                          item.discount > 0 ? "line-through" : "normal",
+                        fontSize: "14px",
                       }}
                     >
-                      {formatNumberToLocal(item.price, { language: i18n.language as 'vi' | 'en' })}
+                      {formatNumberToLocal(item.price, {
+                        language: i18n.language as "vi" | "en",
+                      })}
                     </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       {item.discount > 0 && (
                         <Typography
-                          variant='h4'
+                          variant="h4"
                           sx={{
                             color: theme.palette.primary.main,
-                            fontSize: '14px'
+                            fontSize: "14px",
                           }}
                         >
-                          {formatNumberToLocal((item.price * (100 - item.discount)) / 100, {
-                            language: i18n.language as 'vi' | 'en'
-                          })}
+                          {formatNumberToLocal(
+                            (item.price * (100 - item.discount)) / 100,
+                            {
+                              language: i18n.language as "vi" | "en",
+                            },
+                          )}
                         </Typography>
                       )}
                       {item.discount > 0 && (
                         <Box
                           sx={{
-                            backgroundColor: hexToRGBA(theme.palette.error.main, 0.42),
-                            width: '36px',
-                            height: '14px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            borderRadius: '2px'
+                            backgroundColor: hexToRGBA(
+                              theme.palette.error.main,
+                              0.42,
+                            ),
+                            width: "36px",
+                            height: "14px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderRadius: "2px",
                           }}
                         >
                           <Typography
-                            variant='h6'
+                            variant="h6"
                             sx={{
                               color: theme.palette.error.main,
-                              fontSize: '10px',
-                              whiteSpace: 'nowrap'
+                              fontSize: "10px",
+                              whiteSpace: "nowrap",
                             }}
                           >
                             - {item.discount} %
@@ -382,164 +471,313 @@ const MyOrderDetailsPage: NextPage<TProps> = () => {
                   </Box>
                   <Typography
                     sx={{
-                      fontSize: '14px'
+                      fontSize: "14px",
                     }}
                   >
                     x {item.amount}
                   </Typography>
                 </Box>
               </Box>
-            )
+            );
           })}
         </Box>
         <Divider />
-        <Box sx={{ display: { sm: 'flex', xs: 'block' }, alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: '2px', mt: 4 }}>
-              <Typography sx={{ fontSize: '18px', fontWeight: 600 }}>{t('Address_shipping')}:</Typography>
-              <Typography sx={{ fontSize: '18px', fontWeight: 600, color: theme.palette.primary.main }}>
-                {dataOrder?.shippingAddress?.address} {dataOrder?.shippingAddress?.city?.name}
+        <Box
+          sx={{
+            display: { sm: "flex", xs: "block" },
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "2px",
+                mt: 4,
+              }}
+            >
+              <Typography sx={{ fontSize: "18px", fontWeight: 600 }}>
+                {t("Address_shipping")}:
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: "18px",
+                  fontWeight: 600,
+                  color: theme.palette.primary.main,
+                }}
+              >
+                {dataOrder?.shippingAddress?.address}{" "}
+                {dataOrder?.shippingAddress?.city?.name}
               </Typography>
             </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: '2px', mt: 4 }}>
-              <Typography sx={{ fontSize: '18px', fontWeight: 600 }}>{t('Phone_number')}:</Typography>
-              <Typography sx={{ fontSize: '18px', fontWeight: 600, color: theme.palette.primary.main }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "2px",
+                mt: 4,
+              }}
+            >
+              <Typography sx={{ fontSize: "18px", fontWeight: 600 }}>
+                {t("Phone_number")}:
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: "18px",
+                  fontWeight: 600,
+                  color: theme.palette.primary.main,
+                }}
+              >
                 {dataOrder?.shippingAddress?.phone}
               </Typography>
             </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: '2px', mt: 4 }}>
-              <Typography sx={{ fontSize: '18px', fontWeight: 600 }}>{t('Order_name_user')}:</Typography>
-              <Typography sx={{ fontSize: '18px', fontWeight: 600, color: theme.palette.primary.main }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "2px",
+                mt: 4,
+              }}
+            >
+              <Typography sx={{ fontSize: "18px", fontWeight: 600 }}>
+                {t("Order_name_user")}:
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: "18px",
+                  fontWeight: 600,
+                  color: theme.palette.primary.main,
+                }}
+              >
                 {dataOrder?.shippingAddress?.fullName}
               </Typography>
             </Box>
           </Box>
           <Divider />
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: '2px', mt: 4 }}>
-              <Typography sx={{ fontSize: '18px', fontWeight: 600 }}>{t('Item_price')}:</Typography>
-              <Typography sx={{ fontSize: '18px', fontWeight: 600, color: theme.palette.primary.main }}>
-                {formatNumberToLocal(dataOrder?.itemsPrice, { language: i18n.language as 'vi' | 'en' })}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "2px",
+                mt: 4,
+              }}
+            >
+              <Typography sx={{ fontSize: "18px", fontWeight: 600 }}>
+                {t("Item_price")}:
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: "18px",
+                  fontWeight: 600,
+                  color: theme.palette.primary.main,
+                }}
+              >
+                {formatNumberToLocal(dataOrder?.itemsPrice, {
+                  language: i18n.language as "vi" | "en",
+                })}
               </Typography>
             </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: '2px', mt: 4 }}>
-              <Typography sx={{ fontSize: '18px', fontWeight: 600 }}>{t('Shipping_price')}:</Typography>
-              <Typography sx={{ fontSize: '18px', fontWeight: 600, color: theme.palette.primary.main }}>
-                {formatNumberToLocal(dataOrder?.shippingPrice, { language: i18n.language as 'vi' | 'en' })}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "2px",
+                mt: 4,
+              }}
+            >
+              <Typography sx={{ fontSize: "18px", fontWeight: 600 }}>
+                {t("Shipping_price")}:
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: "18px",
+                  fontWeight: 600,
+                  color: theme.palette.primary.main,
+                }}
+              >
+                {formatNumberToLocal(dataOrder?.shippingPrice, {
+                  language: i18n.language as "vi" | "en",
+                })}
               </Typography>
             </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: '2px', mt: 4 }}>
-              <Typography sx={{ fontSize: '18px', fontWeight: 600 }}>{t('Sum_money')}:</Typography>
-              <Typography sx={{ fontSize: '18px', fontWeight: 600, color: theme.palette.primary.main }}>
-                {formatNumberToLocal(dataOrder?.totalPrice, { language: i18n.language as 'vi' | 'en' })}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "2px",
+                mt: 4,
+              }}
+            >
+              <Typography sx={{ fontSize: "18px", fontWeight: 600 }}>
+                {t("Sum_money")}:
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: "18px",
+                  fontWeight: 600,
+                  color: theme.palette.primary.main,
+                }}
+              >
+                {formatNumberToLocal(dataOrder?.totalPrice, {
+                  language: i18n.language as "vi" | "en",
+                })}
               </Typography>
             </Box>
           </Box>
         </Box>
 
-        <Box mt={2} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box sx={{ display: 'flex', gap: '2px', mt: 4 }}>
-            <Typography sx={{ fontSize: '18px', fontWeight: 600 }}>{t('Latest_Update')}:</Typography>
-            <Typography sx={{ fontSize: '18px', fontWeight: 500, color: theme.palette.primary.main }}>
-              {formatDate(dataOrder.updatedAt, { dateStyle: 'short' })}
+        <Box mt={2} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box sx={{ display: "flex", gap: "2px", mt: 4 }}>
+            <Typography sx={{ fontSize: "18px", fontWeight: 600 }}>
+              {t("Latest_Update")}:
+            </Typography>
+            <Typography
+              sx={{
+                fontSize: "18px",
+                fontWeight: 500,
+                color: theme.palette.primary.main,
+              }}
+            >
+              {formatDate(dataOrder.updatedAt, { dateStyle: "short" })}
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Icon icon='carbon:delivery' />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Icon icon="carbon:delivery" />
             <Typography>
               {!!dataOrder.isDelivered ? (
                 <>
-                  <span style={{ color: theme.palette.success.main, fontSize: '16px' }}>
-                    {t('Order_has_been_delivery')}
+                  <span
+                    style={{
+                      color: theme.palette.success.main,
+                      fontSize: "16px",
+                    }}
+                  >
+                    {t("Order_has_been_delivery")}
                   </span>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold' }}>
-                    {' '}
-                    {formatDate(dataOrder.deliveryAt, { dateStyle: 'short' })}
+                  <span style={{ fontSize: "16px", fontWeight: "bold" }}>
+                    {" "}
+                    {formatDate(dataOrder.deliveryAt, { dateStyle: "short" })}
                   </span>
                 </>
               ) : (
-                <span style={{ color: theme.palette.error.main, fontSize: '16px' }}>
-                  {t('Order_has_not_been_delivery')}
+                <span
+                  style={{ color: theme.palette.error.main, fontSize: "16px" }}
+                >
+                  {t("Order_has_not_been_delivery")}
                 </span>
               )}
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Icon icon='streamline:payment-10' />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Icon icon="streamline:payment-10" />
             <Typography>
               {!!dataOrder.isPaid ? (
                 <>
-                  <span style={{ color: theme.palette.success.main, fontSize: '16px' }}>
-                    {t('Order_has_been_paid')}
+                  <span
+                    style={{
+                      color: theme.palette.success.main,
+                      fontSize: "16px",
+                    }}
+                  >
+                    {t("Order_has_been_paid")}
                   </span>
-                  <span style={{ fontSize: '16px', fontWeight: 'bold' }}>
-                    {' '}
-                    {formatDate(dataOrder.paidAt, { dateStyle: 'short' })}
+                  <span style={{ fontSize: "16px", fontWeight: "bold" }}>
+                    {" "}
+                    {formatDate(dataOrder.paidAt, { dateStyle: "short" })}
                   </span>
                 </>
               ) : (
-                <span style={{ color: theme.palette.error.main, fontSize: '16px' }}>
-                  {t('Order_has_not_been_paid')}
+                <span
+                  style={{ color: theme.palette.error.main, fontSize: "16px" }}
+                >
+                  {t("Order_has_not_been_paid")}
                 </span>
               )}
             </Typography>
           </Box>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 4, mt: 6, justifyContent: 'flex-end' }}>
-          {[0].includes(dataOrder.status) && dataOrder.paymentMethod.type !== PAYMENT_DATA.PAYMENT_LATER.value && (
-            <Button
-              variant='outlined'
-              onClick={() => {
-                const findTypePayment = optionPayments.find(item => item.value === String(dataOrder.paymentMethod))
-                handlePaymentTypeOrder(findTypePayment?.type as string)
-              }}
-              sx={{
-                height: 40,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '2px',
-                backgroundColor: 'transparent !important'
-              }}
-            >
-              {t('Payment')}
-            </Button>
-          )}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            mt: 6,
+            justifyContent: "flex-end",
+          }}
+        >
+          {[0].includes(dataOrder.status) &&
+            dataOrder.paymentMethod.type !==
+              PAYMENT_DATA.PAYMENT_LATER.value && (
+              <Button
+                variant="outlined"
+                onClick={() => {
+                  const findTypePayment = optionPayments.find(
+                    (item) => item.value === String(dataOrder.paymentMethod),
+                  );
+                  handlePaymentTypeOrder(findTypePayment?.type as string);
+                }}
+                sx={{
+                  height: 40,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "2px",
+                  backgroundColor: "transparent !important",
+                }}
+              >
+                {t("Payment")}
+              </Button>
+            )}
           {[0, 1].includes(dataOrder?.status) && (
             <Button
-              variant='outlined'
+              variant="outlined"
               onClick={() => setOpenCancel(true)}
               sx={{
                 height: 40,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '2px',
-                color: '#da251d !important',
-                backgroundColor: 'transparent !important',
-                border: '1px solid #da251d !important'
+                display: "flex",
+                alignItems: "center",
+                gap: "2px",
+                color: "#da251d !important",
+                backgroundColor: "transparent !important",
+                border: "1px solid #da251d !important",
               }}
             >
-              {t('Cancel_order')}
+              {t("Cancel_order")}
             </Button>
           )}
           <Button
-            variant='contained'
+            variant="contained"
             onClick={handleBuyAgain}
             sx={{
               height: 40,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '2px',
-              fontWeight: 'bold'
+              display: "flex",
+              alignItems: "center",
+              gap: "2px",
+              fontWeight: "bold",
             }}
             disabled={memeDisabledBuyAgain}
           >
-            {t('Buy_again')}
+            {t("Buy_again")}
           </Button>
         </Box>
       </Box>
     </>
-  )
-}
+  );
+};
 
-export default MyOrderDetailsPage
+export default MyOrderDetailsPage;

@@ -1,11 +1,11 @@
-'use client'
+"use client";
 
 // ** lib
-import axios, { AxiosRequestConfig } from 'axios'
-import { jwtDecode } from 'jwt-decode'
+import axios, { AxiosRequestConfig } from "axios";
+import { jwtDecode } from "jwt-decode";
 
 // ** Config
-import { BASE_URL, API_ENDPOINT } from 'src/configs/api'
+import { BASE_URL, API_ENDPOINT } from "src/configs/api";
 
 // ** Helper
 import {
@@ -13,48 +13,54 @@ import {
   clearTemporaryToken,
   getLocalUserData,
   getTemporaryToken,
-  setLocalUserData
+  setLocalUserData,
 
   // setTemporaryToken
-} from '../storage'
+} from "../storage";
 
 // ** React
-import { FC, useEffect } from 'react'
+import { FC, useEffect } from "react";
 
 // ** Next
-import { NextRouter, useRouter } from 'next/navigation'
+import { usePathname, useRouter } from "next/navigation";
 
 // ** Type
-import { UserDataType } from 'src/contexts/types'
+import { UserDataType } from "src/contexts/types";
 
 // ** Hook
-import { useAuth } from 'src/hooks/useAuth'
+import { useAuth } from "src/hooks/useAuth";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { ROUTE_CONFIG } from "src/configs/route";
+import { createUrlQuery } from "src/utils";
 
 type TAxiosInterceptor = {
-  children: React.ReactNode
-}
+  children: React.ReactNode;
+};
 
-const instanceAxios = axios.create({ baseURL: BASE_URL })
+const instanceAxios = axios.create({ baseURL: BASE_URL });
 
-const handleRedirectLogin = (router: NextRouter, setUser: (data: UserDataType | null) => void) => {
-  if (router.asPath !== '/') {
-    router.replace({
-      pathname: '/login',
-      query: { returnUrl: router.asPath }
-    })
+const handleRedirectLogin = (
+  router: AppRouterInstance,
+  setUser: (data: UserDataType | null) => void,
+) => {
+  const pathName = usePathname();
+  if (pathName !== "/") {
+    router.replace(
+      ROUTE_CONFIG.LOGIN + "?" + createUrlQuery("returnUrl", pathName),
+    );
   } else {
-    router.replace('/login')
+    router.replace("/login");
   }
-  setUser(null)
-  clearLocalUserData()
-  clearTemporaryToken()
-}
+  setUser(null);
+  clearLocalUserData();
+  clearTemporaryToken();
+};
 
-let isRefreshing = false
+let isRefreshing = false;
 let failedQueue: {
-  resolve: (token: string) => void
-  reject: (error: any) => void
-}[] = []
+  resolve: (token: string) => void;
+  reject: (error: any) => void;
+}[] = [];
 
 /**
  * Xử lý tất cả các request đang chờ trong hàng đợi `failedQueue`.
@@ -65,15 +71,15 @@ let failedQueue: {
  * @param token - token mới nếu refresh thành công, ngược lại là null
  */
 const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach(prom => {
+  failedQueue.forEach((prom) => {
     if (token) {
-      prom.resolve(token)
+      prom.resolve(token);
     } else {
-      prom.reject(error)
+      prom.reject(error);
     }
-  })
-  failedQueue = []
-}
+  });
+  failedQueue = [];
+};
 
 /**
  * Thêm request bị lỗi 401 vào hàng đợi chờ `refreshToken`.
@@ -87,106 +93,114 @@ const addRequestQueue = (config: AxiosRequestConfig): Promise<any> => {
     failedQueue.push({
       resolve: (token: string) => {
         if (config.headers) {
-          config.headers['Authorization'] = `Bearer ${token}`
+          config.headers["Authorization"] = `Bearer ${token}`;
         }
-        resolve(config)
+        resolve(config);
       },
       reject: (err: any) => {
-        reject(err)
-      }
-    })
-  })
-}
+        reject(err);
+      },
+    });
+  });
+};
 
 const AxiosInterceptor: FC<TAxiosInterceptor> = ({ children }) => {
-  const router = useRouter()
-  const { setUser, user } = useAuth()
+  const router = useRouter();
+  const { setUser, user } = useAuth();
   useEffect(() => {
-    const reqInterceptor = instanceAxios.interceptors.request.use(async config => {
-      const { accessToken, refreshToken } = getLocalUserData()
+    const reqInterceptor = instanceAxios.interceptors.request.use(
+      async (config) => {
+        const { accessToken, refreshToken } = getLocalUserData();
 
-      const { temporaryToken } = getTemporaryToken()
-      const isPublicApi = config?.params?.isPublic
+        const { temporaryToken } = getTemporaryToken();
+        const isPublicApi = config?.params?.isPublic;
 
-      if (accessToken || temporaryToken) {
-        let decodedAccessToken: any = {}
-        if (accessToken) {
-          decodedAccessToken = jwtDecode(accessToken)
-        } else if (temporaryToken) {
-          decodedAccessToken = jwtDecode(temporaryToken)
-        }
+        if (accessToken || temporaryToken) {
+          let decodedAccessToken: any = {};
+          if (accessToken) {
+            decodedAccessToken = jwtDecode(accessToken);
+          } else if (temporaryToken) {
+            decodedAccessToken = jwtDecode(temporaryToken);
+          }
 
-        if (decodedAccessToken.exp > Date.now() / 1000) {
-          config.headers.Authorization = `Bearer ${accessToken ? accessToken : temporaryToken}`
-        } else {
-          if (refreshToken) {
-            const decodedRefreshToken: any = jwtDecode(refreshToken)
-            if (decodedRefreshToken.exp > Date.now() / 1000) {
-              if (!isRefreshing) {
-                isRefreshing = true
-                await axios
-                  .post(
-                    `${API_ENDPOINT.AUTH.INDEX}/refresh-token`,
-                    {},
-                    {
-                      headers: {
-                        Authorization: `Bearer ${refreshToken}`
+          if (decodedAccessToken.exp > Date.now() / 1000) {
+            config.headers.Authorization = `Bearer ${accessToken ? accessToken : temporaryToken}`;
+          } else {
+            if (refreshToken) {
+              const decodedRefreshToken: any = jwtDecode(refreshToken);
+              if (decodedRefreshToken.exp > Date.now() / 1000) {
+                if (!isRefreshing) {
+                  isRefreshing = true;
+                  await axios
+                    .post(
+                      `${API_ENDPOINT.AUTH.INDEX}/refresh-token`,
+                      {},
+                      {
+                        headers: {
+                          Authorization: `Bearer ${refreshToken}`,
+                        },
+                      },
+                    )
+                    .then((res) => {
+                      const newAccessToken = res.data.data.access_token;
+                      if (newAccessToken) {
+                        config.headers.Authorization = `Bearer ${newAccessToken}`;
+                        processQueue(null, newAccessToken);
+                        if (accessToken) {
+                          setLocalUserData(
+                            JSON.stringify(user),
+                            newAccessToken,
+                            refreshToken,
+                          );
+                        }
+                      } else {
+                        handleRedirectLogin(router, setUser);
                       }
-                    }
-                  )
-                  .then(res => {
-                    const newAccessToken = res.data.data.access_token
-                    if (newAccessToken) {
-                      config.headers.Authorization = `Bearer ${newAccessToken}`
-                      processQueue(null, newAccessToken)
-                      if (accessToken) {
-                        setLocalUserData(JSON.stringify(user), newAccessToken, refreshToken)
-                      }
-                    } else {
-                      handleRedirectLogin(router, setUser)
-                    }
-                  })
-                  .catch(e => {
-                    processQueue(e, null)
-                    handleRedirectLogin(router, setUser)
-                  })
-                  .finally(() => {
-                    isRefreshing = false
-                  })
+                    })
+                    .catch((e) => {
+                      processQueue(e, null);
+                      handleRedirectLogin(router, setUser);
+                    })
+                    .finally(() => {
+                      isRefreshing = false;
+                    });
+                } else {
+                  return await addRequestQueue(config);
+                }
               } else {
-                return await addRequestQueue(config)
+                handleRedirectLogin(router, setUser);
               }
             } else {
-              handleRedirectLogin(router, setUser)
+              handleRedirectLogin(router, setUser);
             }
-          } else {
-            handleRedirectLogin(router, setUser)
           }
+        } else if (!isPublicApi) {
+          handleRedirectLogin(router, setUser);
         }
-      } else if (!isPublicApi) {
-        handleRedirectLogin(router, setUser)
-      }
 
-      if (config?.params?.isPublic) {
-        delete config.params.isPublic
-      }
+        if (config?.params?.isPublic) {
+          delete config.params.isPublic;
+        }
 
-      return config
-    })
+        return config;
+      },
+    );
 
-    const resInterceptor = instanceAxios.interceptors.response.use(response => {
-      return response
-    })
+    const resInterceptor = instanceAxios.interceptors.response.use(
+      (response) => {
+        return response;
+      },
+    );
 
     return () => {
-      instanceAxios.interceptors.request.eject(reqInterceptor)
-      instanceAxios.interceptors.response.eject(resInterceptor)
-    }
-  }, [])
+      instanceAxios.interceptors.request.eject(reqInterceptor);
+      instanceAxios.interceptors.response.eject(resInterceptor);
+    };
+  }, []);
 
-  return <>{children}</>
-}
+  return <>{children}</>;
+};
 
-export default instanceAxios
+export default instanceAxios;
 
-export { AxiosInterceptor }
+export { AxiosInterceptor };

@@ -17,6 +17,7 @@ import {
 
 // ** Hook
 import { useAuth } from "src/hooks/useAuth";
+import { createUrlQuery } from "src/utils";
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -47,11 +48,7 @@ const AuthGuard = (props: AuthGuardProps) => {
         pathName != "en/login" &&
         pathName != "en/"
       ) {
-        router.replace("/login");
-        // router.replace({
-        //   pathname: '/login',
-        //   query: { returnUrl: router.asPath }
-        // })
+        router.replace("/login" + "?" + createUrlQuery("returnUrl", pathName));
       } else {
         router.replace("/login");
       }

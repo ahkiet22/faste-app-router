@@ -4,7 +4,7 @@
 import { createContext, useState, ReactNode, useEffect } from "react";
 
 // ** Next Import
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 // ** Helpers
 import instanceAxios from "src/helpers/axios";
@@ -43,6 +43,7 @@ import { ROUTE_CONFIG } from "src/configs/route";
 import { updateProductToCart } from "src/stores/order-product";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "src/stores";
+import { createUrlQuery } from "src/utils";
 
 // ** Defaults
 const defaultProvider: AuthValuesType = {
@@ -70,6 +71,7 @@ const AuthProvider = ({ children }: Props) => {
   // ** Hooks
   const router = useRouter();
   const pathName = usePathname();
+  const searchParams = useSearchParams();
 
   // ** Translate
   const { t } = useTranslation();
@@ -126,8 +128,7 @@ const AuthProvider = ({ children }: Props) => {
           setTemporaryToken(response.data.access_token);
         }
         toast.success(t("Login_success"));
-        // const returnUrl = router.query.returnUrl;
-        const returnUrl = "/";
+        const returnUrl = searchParams.get("returnUrl");
         setUser({ ...response.data.user });
         const redirectURL = returnUrl && returnUrl !== "/" ? returnUrl : "/";
         router.replace(redirectURL as string);
@@ -159,8 +160,7 @@ const AuthProvider = ({ children }: Props) => {
 
         toast.success(t("Login_success"));
 
-        // const returnUrl = router.query.returnUrl;
-        const returnUrl = "/";
+        const returnUrl = searchParams.get("returnUrl");
         setUser({ ...response.data.user });
         const redirectURL = returnUrl && returnUrl !== "/" ? returnUrl : "/";
         router.replace(redirectURL as string);
@@ -192,8 +192,7 @@ const AuthProvider = ({ children }: Props) => {
 
         toast.success(t("Login_success"));
 
-        // const returnUrl = router.query.returnUrl;
-        const returnUrl = "/";
+        const returnUrl = searchParams.get("returnUrl");
         setUser({ ...response.data.user });
         const redirectURL = returnUrl && returnUrl !== "/" ? returnUrl : "/";
 
@@ -214,11 +213,9 @@ const AuthProvider = ({ children }: Props) => {
 
       if (!LIST_PAGE_PUBLIC?.some((item) => pathName?.startsWith(item))) {
         if (pathName !== "/") {
-          router.replace(ROUTE_CONFIG.LOGIN);
-          // router.replace({
-          //   pathname: ROUTE_CONFIG.LOGIN,
-          //   query: { returnUrl: router.asPath },
-          // });
+          router.replace(
+            ROUTE_CONFIG.LOGIN + "?" + createUrlQuery("returnUrl", pathName),
+          );
         } else {
           router.replace(ROUTE_CONFIG.LOGIN);
         }
