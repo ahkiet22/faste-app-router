@@ -1,7 +1,7 @@
 import React from "react";
 import TranslationProvider from "src/app/[locale]/TranslationProvider";
 import initTranslations from "src/configs/i18n";
-import { StoreWrapper } from "src/hoc/StoreWrapper";
+import { StoreWrapper } from "src/hocs/StoreWrapper";
 
 const i18nNamespaces = ["translation"];
 
