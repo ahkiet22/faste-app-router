@@ -1,5 +1,6 @@
 import Head from "next/head";
 import { ReactNode } from "react";
+import AuthLayoutWrapper from "src/hocs/AuthLayoutWrapper";
 import { getAllProductsPublic } from "src/services/product";
 import { getAllProductTypes } from "src/services/product-type";
 import { TProduct } from "src/types/product";
@@ -85,7 +86,11 @@ export default async function Home(props: TProps) {
   const { products, totalCount, params, productTypes } = await getProductData();
 
   return (
-    <>
+    <AuthLayoutWrapper
+      getLayout={(page: ReactNode) => <LayoutNotApp>{page}</LayoutNotApp>}
+      guestGuard={false}
+      authGuard={false}
+    >
       <Head>
         <title>FastE - Danh Sách Sản Phẩm</title>
         <meta
@@ -104,11 +109,7 @@ export default async function Home(props: TProps) {
         paramsServer={params}
         productTypesServer={productTypes}
       />
-    </>
+    </AuthLayoutWrapper>
   );
 }
-
-Home.getLayout = (page: ReactNode) => <LayoutNotApp>{page}</LayoutNotApp>;
-Home.guesGuard = false;
-Home.authGuard = false;
 Home.title = "Danh sách sản phẩm của cửa hàng FastE";

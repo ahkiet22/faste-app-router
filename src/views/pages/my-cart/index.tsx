@@ -24,7 +24,6 @@ import Icon from "src/components/Icon";
 import NoData from "src/components/no-data";
 
 // ** Translate
-import { t } from "i18next";
 import { useTranslation } from "react-i18next";
 
 // ** Utils
@@ -56,7 +55,7 @@ const MyCartPage: NextPage<TProps> = () => {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
 
   // ** Hooks
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();

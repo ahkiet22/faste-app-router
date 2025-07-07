@@ -44,6 +44,7 @@ import { updateProductToCart } from "src/stores/order-product";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "src/stores";
 import { createUrlQuery } from "src/utils";
+import { i18nConfig } from "src/app/i18n-config";
 
 // ** Defaults
 const defaultProvider: AuthValuesType = {
@@ -68,13 +69,14 @@ const AuthProvider = ({ children }: Props) => {
   const [user, setUser] = useState<UserDataType | null>(defaultProvider.user);
   const [loading, setLoading] = useState<boolean>(defaultProvider.loading);
 
+  // ** Translate
+  const { t, i18n } = useTranslation();
+
   // ** Hooks
   const router = useRouter();
   const pathName = usePathname();
   const searchParams = useSearchParams();
-
-  // ** Translate
-  const { t } = useTranslation();
+  const currentLang = i18n.language;
 
   // ** Redux
   const dispatch: AppDispatch = useDispatch();
@@ -211,7 +213,15 @@ const AuthProvider = ({ children }: Props) => {
 
       // signOut()
 
-      if (!LIST_PAGE_PUBLIC?.some((item) => pathName?.startsWith(item))) {
+      if (
+        !LIST_PAGE_PUBLIC?.some((item) =>
+          pathName?.startsWith(
+            currentLang === i18nConfig.defaultLocale
+              ? item
+              : `/${currentLang}/${item}`,
+          ),
+        )
+      ) {
         if (pathName !== "/") {
           router.replace(
             ROUTE_CONFIG.LOGIN + "?" + createUrlQuery("returnUrl", pathName),

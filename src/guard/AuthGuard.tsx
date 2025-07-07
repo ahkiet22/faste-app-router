@@ -18,6 +18,8 @@ import {
 // ** Hook
 import { useAuth } from "src/hooks/useAuth";
 import { createUrlQuery } from "src/utils";
+import { useTranslation } from "react-i18next";
+import { i18nConfig } from "src/app/i18n-config";
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -34,7 +36,15 @@ const AuthGuard = (props: AuthGuardProps) => {
   // ** router
   const router = useRouter();
   const pathName = usePathname();
+  const { i18n } = useTranslation();
+  const currentLang = i18n.language;
 
+  const urlDefault =
+    currentLang === i18nConfig.defaultLocale ? "/" : `/${currentLang}`;
+  const urlLogin =
+    currentLang === i18nConfig.defaultLocale
+      ? "/logins"
+      : `/${currentLang}/login`;
   useEffect(() => {
     if (
       authContext.user === null &&
@@ -42,12 +52,7 @@ const AuthGuard = (props: AuthGuardProps) => {
       !getLocalUserData().userData &&
       !getTemporaryToken().temporaryToken
     ) {
-      if (
-        pathName !== "/" &&
-        pathName != "/login" &&
-        pathName != "en/login" &&
-        pathName != "en/"
-      ) {
+      if (pathName !== urlDefault && pathName != urlLogin) {
         router.replace("/login" + "?" + createUrlQuery("returnUrl", pathName));
       } else {
         router.replace("/login");

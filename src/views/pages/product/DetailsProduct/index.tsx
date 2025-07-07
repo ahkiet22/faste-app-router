@@ -29,10 +29,6 @@ import CommentInput from "../components/CommentInput";
 import CommentItem from "../components/CommentItem";
 
 // ** Services
-import {
-  getDetailsProductPublicBySlug,
-  getListRelatedProductBySlug,
-} from "src/services/product";
 import { getAllCommentsPublic } from "src/services/comment-product";
 import { getAllReviews } from "src/services/reviewProduct";
 
