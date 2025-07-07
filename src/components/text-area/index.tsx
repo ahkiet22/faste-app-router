@@ -1,3 +1,4 @@
+'use client'
 // ** Mui Imports
 import {
   styled,

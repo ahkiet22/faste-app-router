@@ -1,3 +1,4 @@
+'use client'
 // ** MUI Import
 import { useTheme } from '@mui/material/styles'
 

@@ -46,27 +46,27 @@ export const StoreWrapper = ({ children }: { children: React.ReactNode }) => {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <AxiosInterceptor>
-              {/* <SessionProvider session={session}> */}
-              <SettingsProvider
-              // {...(setConfig ? { pageSettings: setConfig() } : {})}
-              >
-                <SettingsConsumer>
-                  {({ settings }) => {
-                    return (
-                      <ThemeComponent settings={settings}>
-                        {children}
-                        <ReactHotToast>
-                          <Toaster
-                            position={settings.toastPosition}
-                            toastOptions={toastOptions}
-                          />
-                        </ReactHotToast>
-                      </ThemeComponent>
-                    );
-                  }}
-                </SettingsConsumer>
-              </SettingsProvider>
-              {/* </SessionProvider> */}
+              <SessionProvider>
+                <SettingsProvider
+                // {...(setConfig ? { pageSettings: setConfig() } : {})}
+                >
+                  <SettingsConsumer>
+                    {({ settings }) => {
+                      return (
+                        <ThemeComponent settings={settings}>
+                          {children}
+                          <ReactHotToast>
+                            <Toaster
+                              position={settings.toastPosition}
+                              toastOptions={toastOptions}
+                            />
+                          </ReactHotToast>
+                        </ThemeComponent>
+                      );
+                    }}
+                  </SettingsConsumer>
+                </SettingsProvider>
+              </SessionProvider>
             </AxiosInterceptor>
           </AuthProvider>
           <ReactQueryDevtools

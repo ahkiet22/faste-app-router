@@ -1,3 +1,5 @@
+'use client'
+
 // ** Mui
 import { Tooltip, IconButton, useTheme } from '@mui/material'
 
