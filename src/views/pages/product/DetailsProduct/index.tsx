@@ -1,36 +1,36 @@
-"use client";
+'use client'
 
 // ** Next
-import { NextPage } from "next";
-import { usePathname, useRouter } from "next/navigation";
-import Image from "next/image";
+import { NextPage } from 'next'
+import { usePathname, useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 // ** React
-import { Fragment, useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { Fragment, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 // ** Mui
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Grid from "@mui/material/Grid";
-import IconButton from "@mui/material/IconButton";
-import { Rating, Typography, useTheme } from "@mui/material";
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Grid from '@mui/material/Grid'
+import IconButton from '@mui/material/IconButton'
+import { Rating, Typography, useTheme } from '@mui/material'
 
 //** Components
-import CustomTextField from "src/components/text-field";
-import Icon from "src/components/Icon";
-import Spinner from "src/components/spinner";
-import CardReview from "../components/CardReview";
-import CardRelatedProduct from "../components/CardRelatedProduct";
-import NoData from "src/components/no-data";
-import CardSkeletonRelated from "../components/CardSkeletonRelated";
-import CustomCarousel from "src/views/layouts/components/custom-carousel";
-import CommentInput from "../components/CommentInput";
-import CommentItem from "../components/CommentItem";
+import CustomTextField from 'src/components/text-field'
+import Icon from 'src/components/Icon'
+import Spinner from 'src/components/spinner'
+import CardReview from '../components/CardReview'
+import CardRelatedProduct from '../components/CardRelatedProduct'
+import NoData from 'src/components/no-data'
+import CardSkeletonRelated from '../components/CardSkeletonRelated'
+import CustomCarousel from 'src/views/layouts/components/custom-carousel'
+import CommentInput from '../components/CommentInput'
+import CommentItem from '../components/CommentItem'
 
 // ** Services
-import { getAllCommentsPublic } from "src/services/comment-product";
-import { getAllReviews } from "src/services/reviewProduct";
+import { getAllCommentsPublic } from 'src/services/comment-product'
+import { getAllReviews } from 'src/services/reviewProduct'
 
 // ** Utils
 import {
@@ -39,77 +39,72 @@ import {
   createUrlQuery,
   formatFilter,
   formatNumberToLocal,
-  isExpiry,
-} from "src/utils";
-import { hexToRGBA } from "src/utils/hex-to-rgba";
+  isExpiry
+} from 'src/utils'
+import { hexToRGBA } from 'src/utils/hex-to-rgba'
 
 // ** Redux
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "src/stores";
-import { updateProductToCart } from "src/stores/order-product";
-import { createCommentAsync } from "src/stores/comments/actions";
-import { resetInitialState as resetInitialStateComment } from "src/stores/comments";
-import { resetInitialState } from "src/stores/reviews";
+import { useDispatch, useSelector } from 'react-redux'
+import { AppDispatch, RootState } from 'src/stores'
+import { updateProductToCart } from 'src/stores/order-product'
+import { createCommentAsync } from 'src/stores/comments/actions'
+import { resetInitialState as resetInitialStateComment } from 'src/stores/comments'
+import { resetInitialState } from 'src/stores/reviews'
 
 // ** Types
-import { TProduct } from "src/types/product";
-import { TReviewItem } from "src/types/reviews";
-import { TCommentItemProduct } from "src/types/comment-product";
+import { TProduct } from 'src/types/product'
+import { TReviewItem } from 'src/types/reviews'
+import { TCommentItemProduct } from 'src/types/comment-product'
 
 // ** Configs
-import { ROUTE_CONFIG } from "src/configs/route";
-import { OBJECT_TYPE_ERROR_REVIEW } from "src/configs/error";
+import { ROUTE_CONFIG } from 'src/configs/route'
+import { OBJECT_TYPE_ERROR_REVIEW } from 'src/configs/error'
 
 // ** Other
-import {
-  getLocalProductCart,
-  setLocalProductToCart,
-} from "src/helpers/storage";
-import { useAuth } from "src/hooks/useAuth";
-import toast from "react-hot-toast";
-import "react-multi-carousel/lib/styles.css";
-import connectSocketIO from "src/helpers/socket";
-import { ACTION_SOCKET_COMMENT } from "src/configs/socketIo";
+import { getLocalProductCart, setLocalProductToCart } from 'src/helpers/storage'
+import { useAuth } from 'src/hooks/useAuth'
+import toast from 'react-hot-toast'
+import 'react-multi-carousel/lib/styles.css'
+import connectSocketIO from 'src/helpers/socket'
+import { ACTION_SOCKET_COMMENT } from 'src/configs/socketIo'
+import Nodata from '../../../../../public/svgs/no-data.svg'
 
 type TProps = {
-  productData: TProduct;
-  productsRelated: TProduct[];
-};
+  productData: TProduct
+  productsRelated: TProduct[]
+}
 
-const DetailsProductPage: NextPage<TProps> = ({
-  productData,
-  productsRelated,
-}) => {
+const DetailsProductPage: NextPage<TProps> = ({ productData, productsRelated }) => {
   // ** State
-  const [loading, setLoading] = useState(false);
-  const [dataProduct, setDataProduct] = useState<TProduct | any>({});
-  const [listRelatedProduct, setListRelatedProduct] = useState<TProduct[]>([]);
-  const [listReviews, setListReview] = useState<TReviewItem[]>([]);
-  const [amountProduct, setAmountProduct] = useState(1);
+  const [loading, setLoading] = useState(false)
+  const [dataProduct, setDataProduct] = useState<TProduct | any>({})
+  const [listRelatedProduct, setListRelatedProduct] = useState<TProduct[]>([])
+  const [listReviews, setListReview] = useState<TReviewItem[]>([])
+  const [amountProduct, setAmountProduct] = useState(1)
   const [listComment, setListComment] = useState<{
-    data: TCommentItemProduct[];
-    total: number;
+    data: TCommentItemProduct[]
+    total: number
   }>({
     data: [],
-    total: 0,
-  });
+    total: 0
+  })
 
   // ** router
-  const router = useRouter();
-  const pathName = usePathname();
+  const router = useRouter()
+  const pathName = usePathname()
 
   // ** auth
-  const { user } = useAuth();
+  const { user } = useAuth()
 
   // ** theme
-  const theme = useTheme();
+  const theme = useTheme()
 
   // ** Translate
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation()
 
   // ** redux
-  const dispatch: AppDispatch = useDispatch();
-  const { orderItems } = useSelector((state: RootState) => state.orderProduct);
+  const dispatch: AppDispatch = useDispatch()
+  const { orderItems } = useSelector((state: RootState) => state.orderProduct)
   const {
     isSuccessEdit,
     isErrorEdit,
@@ -118,8 +113,8 @@ const DetailsProductPage: NextPage<TProps> = ({
     isErrorDelete,
     isSuccessDelete,
     messageErrorDelete,
-    typeError,
-  } = useSelector((state: RootState) => state.reviews);
+    typeError
+  } = useSelector((state: RootState) => state.reviews)
   const {
     isSuccessCreate: isSuccessCreateComment,
     isErrorCreate: isErrorCreateComment,
@@ -133,18 +128,16 @@ const DetailsProductPage: NextPage<TProps> = ({
     messageErrorDelete: messageErrorDeleteComment,
     isSuccessEdit: isSuccessEditComment,
     isErrorEdit: isErrorEditComment,
-    messageErrorEdit: messageErrorEditComment,
-  } = useSelector((state: RootState) => state.comments);
+    messageErrorEdit: messageErrorEditComment
+  } = useSelector((state: RootState) => state.comments)
 
   // ** Handle
 
   // Function to handle adding, update a product to the cart
   const handleUpdateProductToCart = (item: TProduct) => {
-    const productCart = getLocalProductCart();
-    const parseData = productCart ? JSON.parse(productCart) : {};
-    const discountItem = isExpiry(item.discountStartDate, item.discountEndDate)
-      ? item.discount
-      : 0;
+    const productCart = getLocalProductCart()
+    const parseData = productCart ? JSON.parse(productCart) : {}
+    const discountItem = isExpiry(item.discountStartDate, item.discountEndDate) ? item.discount : 0
 
     const listOrderItems = convertUpdateProductToCart(orderItems, {
       name: item.name,
@@ -153,50 +146,46 @@ const DetailsProductPage: NextPage<TProps> = ({
       price: item.price,
       discount: discountItem,
       product: item._id,
-      slug: item.slug,
-    });
+      slug: item.slug
+    })
 
     if (user?._id) {
       dispatch(
         updateProductToCart({
-          orderItems: listOrderItems,
-        }),
-      );
-      setLocalProductToCart({ ...parseData, [user?._id]: listOrderItems });
+          orderItems: listOrderItems
+        })
+      )
+      setLocalProductToCart({ ...parseData, [user?._id]: listOrderItems })
     } else {
-      router.replace(
-        ROUTE_CONFIG.LOGIN + "?" + createUrlQuery("returnUrl", pathName),
-      );
+      router.replace(ROUTE_CONFIG.LOGIN + '?' + createUrlQuery('returnUrl', pathName))
     }
-  };
+  }
 
   // Function to handle adding a product to the cart and navigating to the cart page
   const handleBuyProductToCart = (item: TProduct) => {
-    handleUpdateProductToCart(item);
-    router.push(
-      ROUTE_CONFIG.MY_CART + "?" + createUrlQuery("selected", item._id),
-    );
-  };
+    handleUpdateProductToCart(item)
+    router.push(ROUTE_CONFIG.MY_CART + '?' + createUrlQuery('selected', item._id))
+  }
 
   // Recursive function to display comments and replies
   // item: current comment, level: nesting level to calculate indentation
   const renderCommentItem = (item: TCommentItemProduct, level: number) => {
     // Increase nesting level by 1 when displaying comments or replies (child comments)
-    level += 1;
+    level += 1
 
     return (
       <Box sx={{ marginLeft: `${level * 40}px` }}>
         <CommentItem item={item} />
         {item.replies && item?.replies?.length > 0 && (
           <>
-            {item.replies?.map((reply) => {
-              return <>{renderCommentItem(reply, level)}</>;
+            {item.replies?.map(reply => {
+              return <>{renderCommentItem(reply, level)}</>
             })}
           </>
         )}
       </Box>
-    );
-  };
+    )
+  }
 
   // Function to handle create comment product
   const handleComment = (comment: string) => {
@@ -206,305 +195,273 @@ const DetailsProductPage: NextPage<TProps> = ({
           createCommentAsync({
             product: dataProduct._id,
             user: user?._id,
-            content: comment,
-          }),
-        );
+            content: comment
+          })
+        )
       } else {
-        router.replace(
-          ROUTE_CONFIG.LOGIN + "?" + createUrlQuery("returnUrl", pathName),
-        );
+        router.replace(ROUTE_CONFIG.LOGIN + '?' + createUrlQuery('returnUrl', pathName))
       }
     }
-  };
+  }
 
-  const findCommentByIdRecursive = (
-    comments: TCommentItemProduct[],
-    id: string,
-  ): undefined | TCommentItemProduct => {
-    const findComment: undefined | TCommentItemProduct = comments.find(
-      (item) => item._id === id,
-    );
-    if (findComment) return findComment;
+  const findCommentByIdRecursive = (comments: TCommentItemProduct[], id: string): undefined | TCommentItemProduct => {
+    const findComment: undefined | TCommentItemProduct = comments.find(item => item._id === id)
+    if (findComment) return findComment
 
     for (const comment of comments) {
       if (comment.replies && comment.replies.length > 0) {
-        const findReply: undefined | TCommentItemProduct =
-          findCommentByIdRecursive(comment.replies, id);
-        if (findReply) return findReply;
+        const findReply: undefined | TCommentItemProduct = findCommentByIdRecursive(comment.replies, id)
+        if (findReply) return findReply
       }
     }
 
-    return undefined;
-  };
+    return undefined
+  }
 
-  const deleteCommentByIdRecursive = (
-    comments: TCommentItemProduct[],
-    id: string,
-  ): undefined | TCommentItemProduct => {
-    const index = comments.findIndex((item) => item._id === id);
+  const deleteCommentByIdRecursive = (comments: TCommentItemProduct[], id: string): undefined | TCommentItemProduct => {
+    const index = comments.findIndex(item => item._id === id)
     if (index !== -1) {
-      const item = comments[index];
-      comments.splice(index, 1);
+      const item = comments[index]
+      comments.splice(index, 1)
 
-      return item;
+      return item
     }
 
     for (const comment of comments) {
       if (comment.replies && comment.replies.length > 0) {
-        const findReply: undefined | TCommentItemProduct =
-          deleteCommentByIdRecursive(comment.replies, id);
-        if (findReply) return findReply;
+        const findReply: undefined | TCommentItemProduct = deleteCommentByIdRecursive(comment.replies, id)
+        if (findReply) return findReply
       }
     }
 
-    return undefined;
-  };
+    return undefined
+  }
 
-  const deleteManyCommentRecursive = (
-    comments: TCommentItemProduct[],
-    ids: string[],
-  ) => {
-    let deletedCount: number = 0;
-    ids.forEach((id) => {
-      const index = comments.findIndex((item) => item._id === id);
+  const deleteManyCommentRecursive = (comments: TCommentItemProduct[], ids: string[]) => {
+    let deletedCount: number = 0
+    ids.forEach(id => {
+      const index = comments.findIndex(item => item._id === id)
       if (index !== -1) {
-        comments.splice(index, 1);
-        deletedCount += 1;
+        comments.splice(index, 1)
+        deletedCount += 1
       }
-    });
+    })
 
     for (const comment of comments) {
       if (comment.replies && comment.replies.length > 0) {
-        deleteManyCommentRecursive(comment.replies, ids);
+        deleteManyCommentRecursive(comment.replies, ids)
       }
     }
 
-    return deletedCount;
-  };
+    return deletedCount
+  }
 
   // fetch api
   const fetchGetAllListReviewByProduct = async (id: string) => {
-    setLoading(true);
+    setLoading(true)
     await getAllReviews({
       params: {
         limit: -1,
         page: -1,
-        order: "createdAt desc",
+        order: 'createdAt desc',
         isPublic: true,
-        ...formatFilter({ productId: id }),
-      },
+        ...formatFilter({ productId: id })
+      }
     })
-      .then(async (response) => {
-        setLoading(false);
-        const data = response?.data?.reviews;
+      .then(async response => {
+        setLoading(false)
+        const data = response?.data?.reviews
         if (data) {
-          setListReview(data);
+          setListReview(data)
         }
       })
       .catch(() => {
-        setLoading(false);
-      });
-  };
+        setLoading(false)
+      })
+  }
 
   const fetchListCommentProduct = async (productId: string) => {
-    setLoading(true);
+    setLoading(true)
     await getAllCommentsPublic({
       params: {
         limit: -1,
         page: -1,
-        order: "createdAt desc",
+        order: 'createdAt desc',
         isPublic: true,
-        productId: productId,
-      },
+        productId: productId
+      }
     })
-      .then(async (response) => {
-        setLoading(false);
-        const data = response?.data;
+      .then(async response => {
+        setLoading(false)
+        const data = response?.data
         if (data) {
           setListComment({
             data: data.comments,
-            total: data.totalCount,
-          });
+            total: data.totalCount
+          })
         }
       })
       .catch(() => {
-        setLoading(false);
-      });
-  };
+        setLoading(false)
+      })
+  }
 
   // Function to handle check discount date
   const memoIsExpiry = useMemo(() => {
-    return isExpiry(dataProduct.discountStartDate, dataProduct.discountEndDate);
-  }, [dataProduct]);
+    return isExpiry(dataProduct.discountStartDate, dataProduct.discountEndDate)
+  }, [dataProduct])
 
   // Socket for comment product
   useEffect(() => {
-    const socket = connectSocketIO();
-    const cloneListComment = cloneDeep(listComment);
+    const socket = connectSocketIO()
+    const cloneListComment = cloneDeep(listComment)
 
-    socket.on(ACTION_SOCKET_COMMENT.CREATE_COMMENT, (data) => {
-      const newListComment = cloneListComment.data;
-      newListComment.unshift({ ...data });
+    socket.on(ACTION_SOCKET_COMMENT.CREATE_COMMENT, data => {
+      const newListComment = cloneListComment.data
+      newListComment.unshift({ ...data })
 
       setListComment({
         data: newListComment,
-        total: cloneListComment.total + 1,
-      });
-    });
+        total: cloneListComment.total + 1
+      })
+    })
 
-    socket.on(ACTION_SOCKET_COMMENT.REPLY_COMMENT, (data) => {
-      const parentId = data.parent;
-      const findParent = cloneListComment?.data?.find(
-        (item: TCommentItemProduct) => item?._id === parentId,
-      );
+    socket.on(ACTION_SOCKET_COMMENT.REPLY_COMMENT, data => {
+      const parentId = data.parent
+      const findParent = cloneListComment?.data?.find((item: TCommentItemProduct) => item?._id === parentId)
       if (findParent) {
-        findParent?.replies?.push({ ...data });
+        findParent?.replies?.push({ ...data })
         setListComment({
           data: cloneListComment.data,
-          total: cloneListComment.total + 1,
-        });
+          total: cloneListComment.total + 1
+        })
       }
-    });
+    })
 
-    socket.on(ACTION_SOCKET_COMMENT.UPDATE_COMMENT, (data) => {
-      const findComment = findCommentByIdRecursive(
-        cloneListComment.data,
-        data._id,
-      );
+    socket.on(ACTION_SOCKET_COMMENT.UPDATE_COMMENT, data => {
+      const findComment = findCommentByIdRecursive(cloneListComment.data, data._id)
       if (findComment) {
-        findComment.content = data.content;
-        setListComment(cloneListComment);
+        findComment.content = data.content
+        setListComment(cloneListComment)
       }
-    });
+    })
 
-    socket.on(ACTION_SOCKET_COMMENT.DELETE_COMMENT, (data) => {
-      const deleteComment = deleteCommentByIdRecursive(
-        cloneListComment.data,
-        data._id,
-      );
+    socket.on(ACTION_SOCKET_COMMENT.DELETE_COMMENT, data => {
+      const deleteComment = deleteCommentByIdRecursive(cloneListComment.data, data._id)
       if (deleteComment) {
-        const totalDelete =
-          (deleteComment?.replies ? deleteComment?.replies?.length : 0) + 1;
+        const totalDelete = (deleteComment?.replies ? deleteComment?.replies?.length : 0) + 1
         setListComment({
           data: cloneListComment.data,
-          total: cloneListComment.total - totalDelete,
-        });
+          total: cloneListComment.total - totalDelete
+        })
       }
-    });
+    })
 
-    socket.on(ACTION_SOCKET_COMMENT.DELETE_MULTIPLE_COMMENT, (data) => {
-      const deletedCount = deleteManyCommentRecursive(
-        cloneListComment.data,
-        data,
-      );
+    socket.on(ACTION_SOCKET_COMMENT.DELETE_MULTIPLE_COMMENT, data => {
+      const deletedCount = deleteManyCommentRecursive(cloneListComment.data, data)
       setListComment({
         data: cloneListComment.data,
-        total: cloneListComment.total - deletedCount,
-      });
-    });
+        total: cloneListComment.total - deletedCount
+      })
+    })
 
     return () => {
-      socket.disconnect();
-    };
+      socket.disconnect()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listComment]);
+  }, [listComment])
 
   useEffect(() => {
     if (productData?._id) {
-      setDataProduct(productData);
+      setDataProduct(productData)
     }
-  }, [productData]);
+  }, [productData])
 
   useEffect(() => {
-    if (productsRelated.length > 0) {
-      setListRelatedProduct(productsRelated);
+    if (Array.isArray(productsRelated) && productsRelated.length > 0) {
+      setListRelatedProduct(productsRelated)
     }
-  }, [productsRelated]);
+  }, [productsRelated])
 
   useEffect(() => {
     if (dataProduct._id) {
-      fetchGetAllListReviewByProduct(dataProduct._id);
-      fetchListCommentProduct(dataProduct._id);
+      fetchGetAllListReviewByProduct(dataProduct._id)
+      fetchListCommentProduct(dataProduct._id)
     }
-  }, [dataProduct._id]);
+  }, [dataProduct._id])
 
   useEffect(() => {
     if (isSuccessEdit) {
-      toast.success(t("Update_review_success"));
-      fetchGetAllListReviewByProduct(dataProduct._id);
-      dispatch(resetInitialState());
+      toast.success(t('Update_review_success'))
+      fetchGetAllListReviewByProduct(dataProduct._id)
+      dispatch(resetInitialState())
     } else if (isErrorEdit && messageErrorEdit && typeError) {
-      const errorConfig = OBJECT_TYPE_ERROR_REVIEW[typeError];
+      const errorConfig = OBJECT_TYPE_ERROR_REVIEW[typeError]
       if (errorConfig) {
-        toast.error(t(errorConfig));
+        toast.error(t(errorConfig))
       } else {
-        toast.error(t("Update_review_error"));
+        toast.error(t('Update_review_error'))
       }
-      dispatch(resetInitialState());
+      dispatch(resetInitialState())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccessEdit, isErrorEdit, messageErrorEdit, typeError]);
+  }, [isSuccessEdit, isErrorEdit, messageErrorEdit, typeError])
 
   useEffect(() => {
     if (isSuccessDelete) {
-      toast.success(t("Delete_review_success"));
-      fetchGetAllListReviewByProduct(dataProduct._id);
-      dispatch(resetInitialState());
+      toast.success(t('Delete_review_success'))
+      fetchGetAllListReviewByProduct(dataProduct._id)
+      dispatch(resetInitialState())
     } else if (isErrorDelete && messageErrorDelete) {
-      toast.error(t("Delete_review_error"));
-      dispatch(resetInitialState());
+      toast.error(t('Delete_review_error'))
+      dispatch(resetInitialState())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccessDelete, isErrorDelete, messageErrorDelete]);
+  }, [isSuccessDelete, isErrorDelete, messageErrorDelete])
 
   useEffect(() => {
     if (isSuccessDeleteComment) {
-      toast.success(t("Delete_comment_success"));
-      dispatch(resetInitialStateComment());
+      toast.success(t('Delete_comment_success'))
+      dispatch(resetInitialStateComment())
     } else if (isErrorDeleteComment && messageErrorDeleteComment) {
-      toast.error(t("Delete_comment_error"));
-      dispatch(resetInitialStateComment());
+      toast.error(t('Delete_comment_error'))
+      dispatch(resetInitialStateComment())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccessDeleteComment, isErrorDeleteComment, messageErrorDeleteComment]);
+  }, [isSuccessDeleteComment, isErrorDeleteComment, messageErrorDeleteComment])
 
   useEffect(() => {
     if (isSuccessCreateComment) {
-      toast.success(t("Create_comment_success"));
-      dispatch(resetInitialStateComment());
+      toast.success(t('Create_comment_success'))
+      dispatch(resetInitialStateComment())
     } else if (isErrorCreateComment && messageErrorCreateComment) {
-      toast.error(t("Create_comment_error"));
-      dispatch(resetInitialStateComment());
+      toast.error(t('Create_comment_error'))
+      dispatch(resetInitialStateComment())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccessCreateComment, isErrorCreateComment, messageErrorCreateComment]);
+  }, [isSuccessCreateComment, isErrorCreateComment, messageErrorCreateComment])
 
   useEffect(() => {
     if (isSuccessEditComment) {
-      toast.success(t("Update_comment_success"));
-      dispatch(resetInitialStateComment());
+      toast.success(t('Update_comment_success'))
+      dispatch(resetInitialStateComment())
     } else if (isErrorEditComment && messageErrorEditComment) {
-      toast.error(t("Update_comment_error"));
-      dispatch(resetInitialStateComment());
+      toast.error(t('Update_comment_error'))
+      dispatch(resetInitialStateComment())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isSuccessEditComment,
-    isErrorEditComment,
-    messageErrorEditComment,
-    typeError,
-  ]);
+  }, [isSuccessEditComment, isErrorEditComment, messageErrorEditComment, typeError])
 
   useEffect(() => {
     if (isSuccessReply) {
-      toast.success(t("Create_reply_success"));
-      dispatch(resetInitialStateComment());
+      toast.success(t('Create_reply_success'))
+      dispatch(resetInitialStateComment())
     } else if (isErrorReply && messageErrorReply) {
-      toast.error(t("Create_reply_error"));
-      dispatch(resetInitialStateComment());
+      toast.error(t('Create_reply_error'))
+      dispatch(resetInitialStateComment())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccessReply, isErrorReply, messageErrorReply]);
+  }, [isSuccessReply, isErrorReply, messageErrorReply])
 
   return (
     <>
@@ -514,12 +471,12 @@ const DetailsProductPage: NextPage<TProps> = ({
           <Typography
             sx={{
               color: theme.palette.primary.main,
-              fontWeight: "600",
-              marginBottom: "8px",
+              fontWeight: '600',
+              marginBottom: '8px'
             }}
           >
-            {t("Product_details")}
-            {" / "}
+            {t('Product_details')}
+            {' / '}
             {dataProduct.type?.name} / {dataProduct?.name}
           </Typography>
         </Box>
@@ -530,111 +487,109 @@ const DetailsProductPage: NextPage<TProps> = ({
           xs={12}
           sx={{
             backgroundColor: theme.palette.background.paper,
-            borderRadius: "15px",
+            borderRadius: '15px',
             py: 5,
-            px: 4,
+            px: 4
           }}
         >
           <Box
             sx={{
-              height: "100%",
-              width: "100%",
+              height: '100%',
+              width: '100%'
             }}
           >
             <Grid container spacing={8}>
               <Grid item md={5} xs={12}>
                 <Image
-                  src={dataProduct?.image}
-                  alt="banner"
+                  src={dataProduct.image ? dataProduct.image : Nodata}
+                  alt='banner'
                   width={0}
                   height={0}
                   style={{
-                    height: "100%",
-                    maxHeight: "400px",
-                    width: "100%",
-                    objectFit: "contain",
-                    borderRadius: "15px",
+                    height: '100%',
+                    maxHeight: '400px',
+                    width: '100%',
+                    objectFit: 'contain',
+                    borderRadius: '15px'
                   }}
                 />
               </Grid>
               <Grid item md={7} xs={12}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <Typography
-                    variant="h5"
+                    variant='h5'
                     sx={{
                       color: theme.palette.primary.main,
-                      fontWeight: "bold",
-                      textOverflow: "ellipsis",
-                      display: "-webkit-box",
+                      fontWeight: 'bold',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
                       WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                      overflow: "hidden",
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
                     }}
                   >
                     {dataProduct.name}
                   </Typography>
                 </Box>
 
-                <Box
-                  sx={{ display: "flex", alignItems: "center", gap: 1, mt: 2 }}
-                >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
                   {!!dataProduct?.averageRating && (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Typography
-                        variant="h5"
+                        variant='h5'
                         sx={{
                           color: theme.palette.primary.main,
-                          fontWeight: "bold",
-                          textOverflow: "ellipsis",
-                          display: "-webkit-box",
-                          "-webkitLineClamp": "2",
-                          "-webkitBoxOrient": "vertical",
-                          textDecoration: "underline",
-                          fontSize: "16px",
+                          fontWeight: 'bold',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          '-webkitLineClamp': '2',
+                          '-webkitBoxOrient': 'vertical',
+                          textDecoration: 'underline',
+                          fontSize: '16px'
                         }}
                       >
                         {dataProduct.averageRating}
                       </Typography>
                       <Rating
-                        name="read-only"
-                        sx={{ fontSize: "16px" }}
+                        name='read-only'
+                        sx={{ fontSize: '16px' }}
                         defaultValue={dataProduct?.averageRating}
                         precision={0.5}
                         readOnly
                       />
                     </Box>
                   )}
-                  <Typography sx={{ display: "flex", alignItems: "center" }}>
+                  <Typography sx={{ display: 'flex', alignItems: 'center' }}>
                     {dataProduct.totalReviews > 0 ? (
                       <span>
-                        <b>{dataProduct.totalReviews}</b> {t("Review")}
+                        <b>{dataProduct.totalReviews}</b> {t('Review')}
                       </span>
                     ) : (
-                      <span>{t("not_review")}</span>
+                      <span>{t('not_review')}</span>
                     )}
                   </Typography>
-                  {" | "}
+                  {' | '}
                   {dataProduct.sold && (
-                    <Typography variant="body2" color="text.secondary">
-                      <>{t("Sold_product")}</> <b>{dataProduct.sold}</b>
+                    <Typography variant='body2' color='text.secondary'>
+                      <>{t('Sold_product')}</> <b>{dataProduct.sold}</b>
                     </Typography>
                   )}
                 </Box>
                 <Box
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "2px",
-                    mt: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '2px',
+                    mt: 2
                   }}
                 >
-                  <Icon icon="carbon:location" />
+                  <Icon icon='carbon:location' />
 
                   <Typography
-                    variant="h6"
+                    variant='h6'
                     sx={{
-                      fontWeight: "bold",
-                      fontSize: "14px",
+                      fontWeight: 'bold',
+                      fontSize: '14px'
                     }}
                   >
                     {dataProduct?.location?.name}
@@ -642,76 +597,69 @@ const DetailsProductPage: NextPage<TProps> = ({
                 </Box>
                 <Box
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
+                    display: 'flex',
+                    alignItems: 'center',
                     gap: 2,
                     mt: 2,
                     backgroundColor: theme.palette.customColors.bodyBg,
-                    padding: "8px",
-                    borderRadius: "8px",
+                    padding: '8px',
+                    borderRadius: '8px'
                   }}
                 >
                   {dataProduct.discount > 0 && memoIsExpiry && (
                     <Typography
-                      variant="body2"
-                      color="text.secondary"
+                      variant='body2'
+                      color='text.secondary'
                       sx={{
-                        textDecoration: "line-through",
-                        fontSize: "18px",
+                        textDecoration: 'line-through',
+                        fontSize: '18px'
                       }}
                     >
                       {formatNumberToLocal(dataProduct.price, {
-                        language: i18n.language as "vi" | "en",
+                        language: i18n.language as 'vi' | 'en'
                       })}
                     </Typography>
                   )}
                   <Typography
-                    variant="h4"
+                    variant='h4'
                     sx={{
                       color: theme.palette.primary.main,
-                      fontWeight: "bold",
-                      fontSize: "24px",
+                      fontWeight: 'bold',
+                      fontSize: '24px'
                     }}
                   >
                     {dataProduct.discount > 0 && memoIsExpiry ? (
                       <>
-                        {formatNumberToLocal(
-                          (dataProduct.price * (100 - dataProduct.discount)) /
-                            100,
-                          {
-                            language: i18n.language as "vi" | "en",
-                          },
-                        )}
+                        {formatNumberToLocal((dataProduct.price * (100 - dataProduct.discount)) / 100, {
+                          language: i18n.language as 'vi' | 'en'
+                        })}
                       </>
                     ) : (
                       <>
                         {formatNumberToLocal(dataProduct.price, {
-                          language: i18n.language as "vi" | "en",
+                          language: i18n.language as 'vi' | 'en'
                         })}
                       </>
-                    )}{" "}
+                    )}{' '}
                   </Typography>
                   {dataProduct.discount > 0 && memoIsExpiry && (
                     <Box
                       sx={{
-                        backgroundColor: hexToRGBA(
-                          theme.palette.error.main,
-                          0.42,
-                        ),
-                        width: "36px",
-                        height: "14px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderRadius: "2px",
+                        backgroundColor: hexToRGBA(theme.palette.error.main, 0.42),
+                        width: '36px',
+                        height: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '2px'
                       }}
                     >
                       <Typography
-                        variant="h6"
+                        variant='subtitle1'
                         sx={{
                           color: theme.palette.error.main,
-                          fontSize: "10px",
-                          whiteSpace: "nowrap",
+                          fontSize: '10px',
+                          whiteSpace: 'nowrap'
                         }}
                       >
                         - {dataProduct.discount} %
@@ -722,115 +670,106 @@ const DetailsProductPage: NextPage<TProps> = ({
 
                 <Box
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4
                   }}
                 >
                   <Box
                     sx={{
-                      flexBasis: "10%",
+                      flexBasis: '10%',
                       mt: 8,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2
                     }}
                   >
                     <IconButton
                       onClick={() => {
                         if (amountProduct > 1) {
-                          setAmountProduct((prev) => prev - 1);
+                          setAmountProduct(prev => prev - 1)
                         }
                       }}
                       sx={{
                         backgroundColor: `${theme.palette.primary.main} !important`,
-                        color: `${theme.palette.common.white}`,
+                        color: `${theme.palette.common.white}`
                       }}
                     >
-                      <Icon icon="ic:sharp-minus" />
+                      <Icon icon='ic:sharp-minus' />
                     </IconButton>
                     <CustomTextField
-                      type="number"
+                      type='number'
                       value={amountProduct}
-                      onChange={(e) => {
-                        setAmountProduct(+e.target.value);
+                      onChange={e => {
+                        setAmountProduct(+e.target.value)
                       }}
                       inputProps={{
-                        inputMode: "numeric",
+                        inputMode: 'numeric',
                         min: 1,
-                        max: dataProduct.countInStock,
+                        max: dataProduct.countInStock
                       }}
-                      margin="normal"
+                      margin='normal'
                       sx={{
-                        ".MuiInputBase-input.MuiFilledInput-input": {
-                          width: "20px",
+                        '.MuiInputBase-input.MuiFilledInput-input': {
+                          width: '20px'
                         },
-                        ".MuiInputBase-root.MuiFilledInput-root": {
-                          borderRadius: "0px",
-                          borderTop: "none",
-                          borderRight: "none",
-                          borderLeft: "none",
-                          "&.Mui-focused": {
+                        '.MuiInputBase-root.MuiFilledInput-root': {
+                          borderRadius: '0px',
+                          borderTop: 'none',
+                          borderRight: 'none',
+                          borderLeft: 'none',
+                          '&.Mui-focused': {
                             backgroundColor: `${theme.palette.background.paper} !important`,
-                            boxShadow: "none !important",
-                          },
+                            boxShadow: 'none !important'
+                          }
                         },
-                        "input::-webkit-outer-spin-button, input::-webkit-inner-spin-button":
-                          {
-                            WebkitAppearance: "none",
-                            margin: 0,
-                          },
-                        "input[type=number]": {
-                          MozAppearance: "textfield",
+                        'input::-webkit-outer-spin-button, input::-webkit-inner-spin-button': {
+                          WebkitAppearance: 'none',
+                          margin: 0
                         },
+                        'input[type=number]': {
+                          MozAppearance: 'textfield'
+                        }
                       }}
                     />
                     <IconButton
                       onClick={() => {
                         if (amountProduct < dataProduct.countInStock) {
-                          setAmountProduct((prev) => prev + 1);
+                          setAmountProduct(prev => prev + 1)
                         }
                       }}
                       sx={{
                         backgroundColor: `${theme.palette.primary.main} !important`,
-                        color: `${theme.palette.common.white}`,
+                        color: `${theme.palette.common.white}`
                       }}
                     >
-                      <Icon icon="ic:round-plus" />
+                      <Icon icon='ic:round-plus' />
                     </IconButton>
                   </Box>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mt: 8 }}
-                  >
+                  <Typography variant='body2' color='text.secondary' sx={{ mt: 8 }}>
                     {dataProduct.countInStock > 0 ? (
                       <>
-                        {t("Still")} <b>{dataProduct?.countInStock}</b>{" "}
-                        <span>{t("product_in_stock")}</span>
+                        {t('Still')} <b>{dataProduct?.countInStock}</b> <span>{t('product_in_stock')}</span>
                       </>
                     ) : (
                       <Box
                         sx={{
-                          backgroundColor: hexToRGBA(
-                            theme.palette.error.main,
-                            0.42,
-                          ),
-                          width: "60px",
-                          height: "20px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          borderRadius: "2px",
-                          my: 1,
+                          backgroundColor: hexToRGBA(theme.palette.error.main, 0.42),
+                          width: '60px',
+                          height: '20px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '2px',
+                          my: 1
                         }}
                       >
                         <Typography
-                          variant="h6"
+                          variant='h6'
                           sx={{
                             color: theme.palette.error.main,
-                            fontSize: "12px",
-                            whiteSpace: "nowrap",
+                            fontSize: '12px',
+                            whiteSpace: 'nowrap'
                           }}
                         >
                           Hết hàng
@@ -841,50 +780,42 @@ const DetailsProductPage: NextPage<TProps> = ({
                 </Box>
                 <Box
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
+                    display: 'flex',
+                    alignItems: 'center',
                     gap: 6,
                     mt: 8,
-                    paddingBottom: "10px",
+                    paddingBottom: '10px'
                   }}
                 >
                   <Button
                     onClick={() => handleUpdateProductToCart(dataProduct)}
-                    variant="outlined"
+                    variant='outlined'
                     sx={{
                       height: 40,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "2px",
-                      fontWeight: "bold",
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '2px',
+                      fontWeight: 'bold'
                     }}
                     disabled={dataProduct.countInStock < 1}
                   >
-                    <Icon
-                      icon="bx:cart"
-                      fontSize={24}
-                      style={{ position: "relative", top: "-2px" }}
-                    />
-                    {t("Add_to_cart")}
+                    <Icon icon='bx:cart' fontSize={24} style={{ position: 'relative', top: '-2px' }} />
+                    {t('Add_to_cart')}
                   </Button>
                   <Button
                     disabled={dataProduct.countInStock < 1}
-                    variant="contained"
+                    variant='contained'
                     sx={{
                       height: 40,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "2px",
-                      fontWeight: "bold",
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '2px',
+                      fontWeight: 'bold'
                     }}
                     onClick={() => handleBuyProductToCart(dataProduct)}
                   >
-                    <Icon
-                      icon="icon-park-outline:buy"
-                      fontSize={20}
-                      style={{ position: "relative", top: "-2px" }}
-                    />
-                    {t("Buy_now")}
+                    <Icon icon='icon-park-outline:buy' fontSize={20} style={{ position: 'relative', top: '-2px' }} />
+                    {t('Buy_now')}
                   </Button>
                 </Box>
               </Grid>
@@ -895,78 +826,76 @@ const DetailsProductPage: NextPage<TProps> = ({
         <Grid container md={12} xs={12} mt={6}>
           <Grid container>
             <Grid container item md={9} xs={12}>
-              <Box sx={{ width: "100%" }}>
+              <Box sx={{ width: '100%' }}>
                 <Box
                   sx={{
                     backgroundColor: theme.palette.background.paper,
-                    borderRadius: "15px",
+                    borderRadius: '15px',
                     py: 5,
-                    px: 4,
+                    px: 4
                   }}
                 >
                   <Box
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
+                      display: 'flex',
+                      alignItems: 'center',
                       gap: 2,
                       mt: 2,
                       backgroundColor: theme.palette.customColors.bodyBg,
-                      padding: "8px",
-                      borderRadius: "8px",
+                      padding: '8px',
+                      borderRadius: '8px'
                     }}
                   >
                     <Typography
-                      variant="h6"
+                      variant='h6'
                       sx={{
                         color: `rgba(${theme.palette.customColors.main}, 0.68)`,
-                        fontWeight: "bold",
-                        fontSize: "18px",
+                        fontWeight: 'bold',
+                        fontSize: '18px'
                       }}
                     >
-                      {t("Description_product")}
+                      {t('Description_product')}
                     </Typography>
                   </Box>
                   <Box
                     sx={{
                       mt: 4,
                       color: `rgba(${theme.palette.customColors.main}, 1)`,
-                      fontSize: "14px",
+                      fontSize: '14px',
                       backgroundColor: theme.palette.customColors.bodyBg,
                       padding: 4,
-                      borderRadius: "10px",
+                      borderRadius: '10px'
                     }}
                     dangerouslySetInnerHTML={{
-                      __html: dataProduct.description,
+                      __html: dataProduct.description
                     }}
                   />
                 </Box>
 
                 {/* Review product  */}
                 <Box
-                  display={{ md: "block", xs: "none" }}
+                  display={{ md: 'block', xs: 'none' }}
                   sx={{
                     backgroundColor: theme.palette.background.paper,
-                    borderRadius: "15px",
+                    borderRadius: '15px',
                     py: 5,
                     px: 4,
-                    width: "100%",
+                    width: '100%'
                   }}
                   marginTop={{ md: 5, xs: 4 }}
                 >
                   <Typography
-                    variant="h6"
+                    variant='h6'
                     sx={{
                       color: `rgba(${theme.palette.customColors.main}, 0.68)`,
-                      fontWeight: "bold",
-                      fontSize: "18px",
+                      fontWeight: 'bold',
+                      fontSize: '18px'
                     }}
                   >
-                    {t("Review_product")}{" "}
-                    <b style={{ color: theme.palette.primary.main }}>
-                      {listReviews?.length}
-                    </b>{" "}
+                    {t('Review_product')}{' '}
+                    <b style={{ color: theme.palette.primary.main }}>{listReviews?.length}</b>{' '}
                   </Typography>
-                  <Box sx={{ width: "100%" }}>
+                  <Box sx={{ width: '100%' }}>
                     <CustomCarousel
                       arrows
                       showDots={true}
@@ -974,34 +903,34 @@ const DetailsProductPage: NextPage<TProps> = ({
                       responsive={{
                         superLargeDesktop: {
                           breakpoint: { max: 4000, min: 3000 },
-                          items: 4,
+                          items: 4
                         },
                         desktop: {
                           breakpoint: { max: 3000, min: 1024 },
-                          items: 3,
+                          items: 3
                         },
                         tablet: {
                           breakpoint: { max: 1024, min: 464 },
-                          items: 2,
+                          items: 2
                         },
                         mobile: {
                           breakpoint: { max: 464, min: 0 },
-                          items: 1,
-                        },
+                          items: 1
+                        }
                       }}
                       infinite={true}
                       autoPlaySpeed={1000}
                       keyBoardControl={true}
-                      customTransition="all .5"
+                      customTransition='all .5'
                       transitionDuration={500}
-                      removeArrowOnDeviceType={["tablet", "mobile"]}
+                      removeArrowOnDeviceType={['tablet', 'mobile']}
                     >
                       {listReviews.map((review: TReviewItem) => {
                         return (
-                          <Box key={review._id} sx={{ margin: "10px 10px" }}>
+                          <Box key={review._id} sx={{ margin: '10px 10px' }}>
                             <CardReview item={review} />
                           </Box>
-                        );
+                        )
                       })}
                     </CustomCarousel>
                   </Box>
@@ -1009,52 +938,43 @@ const DetailsProductPage: NextPage<TProps> = ({
 
                 {/* Comment product  */}
                 <Box
-                  display={{ md: "block", xs: "none" }}
+                  display={{ md: 'block', xs: 'none' }}
                   sx={{
                     backgroundColor: theme.palette.background.paper,
-                    borderRadius: "15px",
+                    borderRadius: '15px',
                     py: 5,
                     px: 4,
-                    width: "100%",
+                    width: '100%'
                   }}
                   marginTop={{ md: 5, xs: 4 }}
                 >
                   <Typography
-                    variant="h6"
+                    variant='h6'
                     sx={{
                       color: `rgba(${theme.palette.customColors.main}, 0.68)`,
-                      fontWeight: "bold",
-                      fontSize: "18px",
-                      mb: "8px",
+                      fontWeight: 'bold',
+                      fontSize: '18px',
+                      mb: '8px'
                     }}
                   >
-                    {t("Comment_product")}{" "}
-                    <b style={{ color: theme.palette.primary.main }}>
-                      {listComment?.total}
-                    </b>{" "}
-                    {t("comments")}
+                    {t('Comment_product')} <b style={{ color: theme.palette.primary.main }}>{listComment?.total}</b>{' '}
+                    {t('comments')}
                   </Typography>
-                  <Box sx={{ width: "100%" }}>
+                  <Box sx={{ width: '100%' }}>
                     <CommentInput onApply={handleComment} />
                     <Box
                       sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "8px",
-                        marginTop: "30px",
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                        marginTop: '30px'
                       }}
                     >
-                      {listComment?.data?.map(
-                        (comment: TCommentItemProduct) => {
-                          const level: number = -1;
+                      {listComment?.data?.map((comment: TCommentItemProduct) => {
+                        const level: number = -1
 
-                          return (
-                            <Fragment key={comment._id}>
-                              {renderCommentItem(comment, level)}
-                            </Fragment>
-                          );
-                        },
-                      )}
+                        return <Fragment key={comment._id}>{renderCommentItem(comment, level)}</Fragment>
+                      })}
                     </Box>
                   </Box>
                 </Box>
@@ -1065,48 +985,46 @@ const DetailsProductPage: NextPage<TProps> = ({
             <Grid container item md={3} xs={12} mt={{ md: 0, xs: 5 }}>
               <Box
                 sx={{
-                  height: "100%",
-                  width: "100%",
+                  height: '100%',
+                  width: '100%',
                   backgroundColor: theme.palette.background.paper,
-                  borderRadius: "15px",
+                  borderRadius: '15px',
                   py: 5,
-                  px: 4,
+                  px: 4
                 }}
                 marginLeft={{ md: 5, xs: 0 }}
               >
                 <Box
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
+                    display: 'flex',
+                    alignItems: 'center',
                     gap: 2,
                     mt: 2,
                     backgroundColor: theme.palette.customColors.bodyBg,
-                    padding: "8px",
-                    borderRadius: "8px",
+                    padding: '8px',
+                    borderRadius: '8px'
                   }}
                 >
                   <Typography
-                    variant="h6"
+                    variant='h6'
                     sx={{
                       color: `rgba(${theme.palette.customColors.main}, 0.68)`,
-                      fontWeight: "bold",
-                      fontSize: "18px",
+                      fontWeight: 'bold',
+                      fontSize: '18px'
                     }}
                   >
-                    {t("Product_same")}
+                    {t('Product_same')}
                   </Typography>
                 </Box>
                 <Box
                   sx={{
-                    mt: 4,
+                    mt: 4
                   }}
                 >
                   {loading ? (
-                    <Box
-                      sx={{ display: "flex", flexDirection: "column", gap: 4 }}
-                    >
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                       {Array.from({ length: 6 }).map((_, index) => {
-                        return <CardSkeletonRelated key={index} />;
+                        return <CardSkeletonRelated key={index} />
                       })}
                     </Box>
                   ) : (
@@ -1114,24 +1032,18 @@ const DetailsProductPage: NextPage<TProps> = ({
                       {listRelatedProduct.length > 0 ? (
                         <Box
                           sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 4,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 4
                           }}
                         >
-                          {listRelatedProduct.map((item) => {
-                            return (
-                              <CardRelatedProduct key={item._id} item={item} />
-                            );
+                          {listRelatedProduct.map(item => {
+                            return <CardRelatedProduct key={item._id} item={item} />
                           })}
                         </Box>
                       ) : (
-                        <Box sx={{ width: "100%", mt: 10 }}>
-                          <NoData
-                            widthImage="60px"
-                            heightImage="60px"
-                            textNodata={t("No_product")}
-                          />
+                        <Box sx={{ width: '100%', mt: 10 }}>
+                          <NoData widthImage='60px' heightImage='60px' textNodata={t('No_product')} />
                         </Box>
                       )}
                     </>
@@ -1140,31 +1052,28 @@ const DetailsProductPage: NextPage<TProps> = ({
               </Box>
             </Grid>
             <Box
-              display={{ md: "none", xs: "block" }}
+              display={{ md: 'none', xs: 'block' }}
               sx={{
                 backgroundColor: theme.palette.background.paper,
-                borderRadius: "15px",
+                borderRadius: '15px',
                 py: 5,
                 px: 4,
-                width: "100%",
+                width: '100%'
               }}
               marginTop={{ md: 5, xs: 4 }}
             >
               <Typography
-                variant="h6"
+                variant='h6'
                 sx={{
                   color: `rgba(${theme.palette.customColors.main}, 0.68)`,
-                  fontWeight: "bold",
-                  fontSize: "18px",
+                  fontWeight: 'bold',
+                  fontSize: '18px'
                 }}
               >
-                {t("Review_product")}{" "}
-                <b style={{ color: theme.palette.primary.main }}>
-                  {listReviews?.length}
-                </b>{" "}
-                {t("ratings")}
+                {t('Review_product')} <b style={{ color: theme.palette.primary.main }}>{listReviews?.length}</b>{' '}
+                {t('ratings')}
               </Typography>
-              <Box sx={{ width: "100%" }}>
+              <Box sx={{ width: '100%' }}>
                 <CustomCarousel
                   arrows
                   showDots={true}
@@ -1172,77 +1081,70 @@ const DetailsProductPage: NextPage<TProps> = ({
                   responsive={{
                     superLargeDesktop: {
                       breakpoint: { max: 4000, min: 3000 },
-                      items: 4,
+                      items: 4
                     },
                     desktop: {
                       breakpoint: { max: 3000, min: 1024 },
-                      items: 3,
+                      items: 3
                     },
                     tablet: {
                       breakpoint: { max: 1024, min: 464 },
-                      items: 2,
+                      items: 2
                     },
                     mobile: {
                       breakpoint: { max: 464, min: 0 },
-                      items: 1,
-                    },
+                      items: 1
+                    }
                   }}
                 >
                   {listReviews.map((review: TReviewItem) => {
                     return (
-                      <Box key={review._id} sx={{ margin: "0 10px" }}>
+                      <Box key={review._id} sx={{ margin: '0 10px' }}>
                         <CardReview item={review} />
                       </Box>
-                    );
+                    )
                   })}
                 </CustomCarousel>
               </Box>
             </Box>
             <Box
-              display={{ md: "none", xs: "block" }}
+              display={{ md: 'none', xs: 'block' }}
               sx={{
                 backgroundColor: theme.palette.background.paper,
-                borderRadius: "15px",
+                borderRadius: '15px',
                 py: 5,
                 px: 4,
-                width: "100%",
+                width: '100%'
               }}
               marginTop={{ md: 5, xs: 4 }}
             >
               <Typography
-                variant="h6"
+                variant='h6'
                 sx={{
                   color: `rgba(${theme.palette.customColors.main}, 0.68)`,
-                  fontWeight: "bold",
-                  fontSize: "18px",
+                  fontWeight: 'bold',
+                  fontSize: '18px'
                 }}
               >
-                {t("Comment_product")}{" "}
-                <b style={{ color: theme.palette.primary.main }}>
-                  {listComment?.total}
-                </b>{" "}
-                {t("comments")}
+                {t('Comment_product')} <b style={{ color: theme.palette.primary.main }}>{listComment?.total}</b>{' '}
+                {t('comments')}
               </Typography>
-              <Box sx={{ width: "100%" }}>
+              <Box sx={{ width: '100%' }}>
                 <CommentInput onApply={handleComment} />
                 <Box
                   sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "8px",
-                    marginTop: "30px",
-                    maxHeight: "300px",
-                    overflow: "auto",
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    marginTop: '30px',
+                    maxHeight: '300px',
+                    overflow: 'auto'
                   }}
                 >
                   {listComment?.data?.map((comment: TCommentItemProduct) => {
-                    const level: number = -1;
+                    const level: number = -1
 
-                    return (
-                      <Fragment key={comment._id}>
-                        {renderCommentItem(comment, level)}
-                      </Fragment>
-                    );
+                    return <Fragment key={comment._id}>{renderCommentItem(comment, level)}</Fragment>
                   })}
                 </Box>
               </Box>
@@ -1251,7 +1153,7 @@ const DetailsProductPage: NextPage<TProps> = ({
         </Grid>
       </Grid>
     </>
-  );
-};
+  )
+}
 
-export default DetailsProductPage;
+export default DetailsProductPage

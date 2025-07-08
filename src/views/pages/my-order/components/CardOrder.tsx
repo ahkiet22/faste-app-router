@@ -15,7 +15,7 @@ import ConfirmationDialog from 'src/components/confirmation-dialog'
 import Icon from 'src/components/Icon'
 
 // ** Utils
-import { convertUpdateMultipleProductsCart, formatNumberToLocal } from 'src/utils'
+import { convertUpdateMultipleProductsCart, createUrlQuery, formatNumberToLocal } from 'src/utils'
 import { hexToRGBA } from 'src/utils/hex-to-rgba'
 
 // ** Redux
@@ -110,13 +110,12 @@ const CardOrder: NextPage<TProps> = props => {
       }))
     )
     router.push(
-      {
-        pathname: ROUTE_CONFIG.MY_CART,
-        query: {
-          selected: dataOrder?.orderItems?.map((item: TItemProductMe) => item?.product?._id)
-        }
-      },
-      ROUTE_CONFIG.MY_CART
+      ROUTE_CONFIG.MY_CART +
+        '?' +
+        createUrlQuery(
+          'selected',
+          dataOrder?.orderItems?.map((item: TItemProductMe) => item?.product?._id)
+        )
     )
   }
 

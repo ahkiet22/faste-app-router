@@ -1,57 +1,52 @@
 // ** Import Next
-import { NextPage } from "next";
-import Head from "next/head";
-import { ReactNode } from "react";
-import AuthLayoutWrapper from "src/hocs/AuthLayoutWrapper";
-import {
-  getDetailsProductPublicBySlug,
-  getListRelatedProductBySlug,
-} from "src/services/product";
-import { TProduct } from "src/types/product";
-import { getTextFromHTML } from "src/utils";
+import { ReactNode } from 'react'
+import AuthLayoutWrapper from 'src/hocs/AuthLayoutWrapper'
+import { getDetailsProductPublicBySlug, getListRelatedProductBySlug } from 'src/services/product'
+import { getTextFromHTML } from 'src/utils'
 
 // * views
-import LayoutNotApp from "src/views/layouts/LayoutNotApp";
-import DetailsProductPage from "src/views/pages/product/DetailsProduct";
+import LayoutNotApp from 'src/views/layouts/LayoutNotApp'
+import DetailsProductPage from 'src/views/pages/product/DetailsProduct'
 
-type TProps = {
-  productData: TProduct;
-  listRelatedProduct: TProduct[];
-};
+type ProductPageProps = {
+  params: {
+    productId: string
+  }
+}
 
 async function getDetailsProduct(slugId: string) {
+
   try {
     const [res, resRelated] = await Promise.all([
       getDetailsProductPublicBySlug(slugId, true),
-      getListRelatedProductBySlug({ params: { slug: slugId } }),
-    ]);
+      getListRelatedProductBySlug({ params: { slug: slugId } })
+    ])
 
-    const productData = res?.data;
-    const listRelatedProduct = resRelated?.data?.products;
+    const productData = res?.data
+    const listRelatedProduct = resRelated?.data?.products
 
     if (!productData?._id) {
       return {
-        notFound: true,
-      };
+        notFound: true
+      }
     }
 
     return {
       productData: productData,
-      listRelatedProduct,
-    };
+      listRelatedProduct
+    }
   } catch (error) {
     return {
       productData: {},
-      listRelatedProduct: [],
-    };
+      listRelatedProduct: []
+    }
   }
 }
 
-const Index = async (params: { productId: string }) => {
-  const { productData, listRelatedProduct } = await getDetailsProduct(
-    params.productId,
-  );
-  const description = getTextFromHTML(productData.description);
+export default async function Page({ params }: { params: Promise<{ locale: string; productId: string }> }) {
+  const { productId } = await params
+  const { productData, listRelatedProduct } = await getDetailsProduct(productId)
+  // const description = getTextFromHTML(productData.description);
 
   return (
     <AuthLayoutWrapper
@@ -59,38 +54,33 @@ const Index = async (params: { productId: string }) => {
       guestGuard={false}
       authGuard={false}
     >
-      <Head>
+      {/* <Head>
         <title>{`FastE - ${productData?.name}`}</title>
+
         <meta name="description" content={description} />
-        <meta name="viewport" content="initial-scale=1, width=device-width" />
-        <meta name="author" content="FastE-Developer" />
-        <meta name="image" content={productData.image} />
-        {/* facebook */}
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content={`FastE - ${productData?.name}`} />
+        <meta name='viewport' content='initial-scale=1, width=device-width' />
+        <meta name='author' content='FastE-Developer' />
+        <meta name='image' content={productData.image} /> */}
+      {/* facebook */}
+      {/* <meta property='og:type' content='website' />
+        <meta property='og:title' content={`FastE - ${productData?.name}`} />
+
         <meta property="og:description" content={description} />
-        <meta property="og:image" content={productData.image} />
-        {/* twitter */}
-        <meta property="twitter:card" content="website" />
-        <meta
-          property="twitter:title"
-          content={`FastE - ${productData?.name}`}
-        />
+        <meta property='og:image' content={productData.image} /> */}
+      {/* twitter */}
+      {/* <meta property='twitter:card' content='website' />
+        <meta property='twitter:title' content={`FastE - ${productData?.name}`} />
         <meta
           property="twitter:description"
-          content={productData.description}
+          content={description}
         />
-        <meta
-          property="twitter:image"
-          content={`FastE - ${productData?.name}`}
-        />
-      </Head>
-      <DetailsProductPage
-        productData={productData}
-        productsRelated={listRelatedProduct}
-      />
-    </AuthLayoutWrapper>
-  );
-};
+        <meta property='twitter:image' content={`FastE - ${productData?.name}`} />
+      </Head> */}
 
-export default Index;
+      <DetailsProductPage productData={productData} productsRelated={listRelatedProduct} />
+    </AuthLayoutWrapper>
+  )
+}
+
+export const dynamic = 'force-static'
+export const revalidate = 10

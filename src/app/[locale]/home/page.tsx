@@ -1,60 +1,56 @@
-import Head from "next/head";
-import { ReactNode } from "react";
-import AuthLayoutWrapper from "src/hocs/AuthLayoutWrapper";
-import { getAllProductsPublic } from "src/services/product";
-import { getAllProductTypes } from "src/services/product-type";
-import { TProduct } from "src/types/product";
+import { ReactNode } from 'react'
+import AuthLayoutWrapper from 'src/hocs/AuthLayoutWrapper'
+import { getAllProductsPublic } from 'src/services/product'
+import { getAllProductTypes } from 'src/services/product-type'
+import { TProduct } from 'src/types/product'
 
 // ** Layouts
-import LayoutNotApp from "src/views/layouts/LayoutNotApp";
-import HomePage from "src/views/pages/home";
+import LayoutNotApp from 'src/views/layouts/LayoutNotApp'
+import HomePage from 'src/views/pages/home'
 
 interface TOptions {
-  label: string;
-  value: string;
+  label: string
+  value: string
 }
 
 interface TProps {
-  products: TProduct[];
-  totalCount: number;
-  productTypes: TOptions[];
+  products: TProduct[]
+  // products: any
+  totalCount: number
+  productTypes: TOptions[]
   params: {
-    limit: number;
-    page: number;
-    order: string;
-    productType: string;
-  };
+    limit: number
+    page: number
+    order: string
+    productType: string
+  }
 }
-
-export const dynamic = "force-dynamic";
 
 async function getProductData(): Promise<TProps> {
   // CSR
-  const limit = 10;
-  const page = 1;
+  const limit = 10
+  const page = 1
 
-  const order = "createdAt desc";
+  const order = 'createdAt desc'
 
   // SSR
   // const { page = 1, limit = 10 } = context.query
   try {
-    const productTypes: TOptions[] = [];
+    const productTypes: TOptions[] = []
 
-    await getAllProductTypes({ params: { limit: -1, page: -1 } }).then(
-      (res) => {
-        const data = res?.data.productTypes;
-        if (data) {
-          data?.map((item: { name: string; _id: string }) => {
-            productTypes.push({ label: item.name, value: item._id });
-          });
-        }
-      },
-    );
+    await getAllProductTypes({ params: { limit: -1, page: -1 } }).then(res => {
+      const data = res?.data.productTypes
+      if (data) {
+        data?.map((item: { name: string; _id: string }) => {
+          productTypes.push({ label: item.name, value: item._id })
+        })
+      }
+    })
     const res = await getAllProductsPublic({
-      params: { limit: limit, page: page, order, productType: "" },
-    });
+      params: { limit: limit, page: page, order, productType: '' }
+    })
 
-    const data = res?.data;
+    const data = res?.data
 
     return {
       products: data?.products ?? [],
@@ -64,9 +60,9 @@ async function getProductData(): Promise<TProps> {
         limit,
         page,
         order,
-        productType: productTypes?.[0]?.value || "",
-      },
-    };
+        productType: productTypes?.[0]?.value || ''
+      }
+    }
   } catch (error) {
     return {
       products: [],
@@ -76,14 +72,14 @@ async function getProductData(): Promise<TProps> {
         limit,
         page,
         order,
-        productType: "",
-      },
-    };
+        productType: ''
+      }
+    }
   }
 }
 
-export default async function Home(props: TProps) {
-  const { products, totalCount, params, productTypes } = await getProductData();
+export default async function Home() {
+  const { products, totalCount, params, productTypes } = await getProductData()
 
   return (
     <AuthLayoutWrapper
@@ -91,25 +87,19 @@ export default async function Home(props: TProps) {
       guestGuard={false}
       authGuard={false}
     >
-      <Head>
+      {/* <Head>
         <title>FastE - Danh Sách Sản Phẩm</title>
         <meta
-          name="description"
-          content="Khám phá danh sách sản phẩm của FastE, từ thời trang đến điện tử, với nhiều lựa chọn và giá cả hợp lý, giao hàng nhanh chóng."
+          name='description'
+          content='Khám phá danh sách sản phẩm của FastE, từ thời trang đến điện tử, với nhiều lựa chọn và giá cả hợp lý, giao hàng nhanh chóng.'
         />
-        <meta
-          name="keywords"
-          content="sản phẩm, thời trang, điện tử, mua sắm online, FastE"
-        />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Head>
-      <HomePage
-        products={products}
-        totalCount={totalCount}
-        paramsServer={params}
-        productTypesServer={productTypes}
-      />
+        <meta name='keywords' content='sản phẩm, thời trang, điện tử, mua sắm online, FastE' />
+        <meta name='viewport' content='width=device-width, initial-scale=1' />
+      </Head> */}
+      <HomePage products={products} totalCount={totalCount} paramsServer={params} productTypesServer={productTypes} />
     </AuthLayoutWrapper>
-  );
+  )
 }
-Home.title = "Danh sách sản phẩm của cửa hàng FastE";
+// Home.title = 'Danh sách sản phẩm của cửa hàng FastE'
+export const dynamic = 'force-static'
+export const revalidate = 10

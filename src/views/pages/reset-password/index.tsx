@@ -30,7 +30,7 @@ import ResetPasswordLight from '/public/images/reset-password-light.png'
 import toast from 'react-hot-toast'
 import { useTranslation } from 'react-i18next'
 import { ROUTE_CONFIG } from 'src/configs/route'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from 'src/stores'
 import Spinner from 'src/components/spinner'
@@ -51,10 +51,11 @@ const ResetPasswordPage: NextPage<TProps> = () => {
 
   // ** Translate
   const { t } = useTranslation()
+  const searchParams = useSearchParams()
 
   // ** Router
   const router = useRouter()
-  const secretKey = router?.query?.secretKey as string
+  const secretKey = searchParams.get('secretKey') as string
 
   // ** theme
   const theme = useTheme()
