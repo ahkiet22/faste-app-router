@@ -7,6 +7,8 @@ import { TProduct } from 'src/types/product'
 // ** Layouts
 import LayoutNotApp from 'src/views/layouts/LayoutNotApp'
 import HomePage from 'src/views/pages/home'
+import LogoFastE from '../../../../public/faste.png'
+import { Metadata } from 'next'
 
 interface TOptions {
   label: string
@@ -24,6 +26,43 @@ interface TProps {
     order: string
     productType: string
   }
+}
+
+export const metadata: Metadata = {
+  title: `FastE - Danh Sách Sản Phẩm`,
+  description:
+    'Khám phá danh sách sản phẩm của FastE, từ thời trang đến điện tử, với nhiều lựa chọn và giá cả hợp lý, giao hàng nhanh chóng.',
+  keywords: ['sản phẩm, thời trang, điện tử, mua sắm online, FastE'],
+  viewport: 'initial-scale=1, width=device-width',
+  openGraph: {
+    siteName: 'FastE',
+    type: 'website',
+    title: `FastE - Danh Sách Sản Phẩm`,
+    description:
+      'Khám phá danh sách sản phẩm của FastE, từ thời trang đến điện tử, với nhiều lựa chọn và giá cả hợp lý, giao hàng nhanh chóng.',
+    images: [
+      {
+        url: 'https://faste.vn/faste.png',
+        width: 1200,
+        height: 630
+      }
+    ],
+    url: 'https://faste.vn'
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `FastE - Danh Sách Sản Phẩm`,
+    description:
+      'Khám phá danh sách sản phẩm của FastE, từ thời trang đến điện tử, với nhiều lựa chọn và giá cả hợp lý, giao hàng nhanh chóng.',
+    images: [
+      {
+        url: 'https://faste.vn/faste.png',
+        width: 1200,
+        height: 630
+      }
+    ]
+  },
+  metadataBase: new URL('https://faste.vn')
 }
 
 async function getProductData(): Promise<TProps> {
@@ -103,3 +142,4 @@ export default async function Home() {
 // Home.title = 'Danh sách sản phẩm của cửa hàng FastE'
 export const dynamic = 'force-static'
 export const revalidate = 10
+export const maxDuration = 300
