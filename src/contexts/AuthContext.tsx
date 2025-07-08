@@ -45,6 +45,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "src/stores";
 import { createUrlQuery } from "src/utils";
 import { i18nConfig } from "src/app/i18n-config";
+import { signOut } from "next-auth/react";
 
 // ** Defaults
 const defaultProvider: AuthValuesType = {
@@ -210,8 +211,7 @@ const AuthProvider = ({ children }: Props) => {
     logoutAuth().then((res) => {
       setUser(null);
       clearLocalUserData();
-
-      // signOut()
+      signOut()
 
       if (
         !LIST_PAGE_PUBLIC?.some((item) =>

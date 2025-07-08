@@ -2,18 +2,34 @@ import NextAuth from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import FacebookProvider from 'next-auth/providers/facebook'
 
-export const authOptions = {
+const handler = NextAuth({
   // Configure one or more authentication providers
   providers: [
     GoogleProvider({
       clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.NEXT_PUBLIC_GOOGLE_SECRET as string,
-      name: 'google'
+      name: 'google',
+      authorization: {
+        params: {
+          prompt: 'consent select_account',
+          access_type: 'offline',
+          response_type: 'code'
+        }
+      }
     }),
     FacebookProvider({
       clientId: process.env.NEXT_PUBLIC_FACEBOOK_CLIENT_ID as string,
       clientSecret: process.env.NEXT_PUBLIC_FACEBOOK_SECRET as string,
-      name: 'facebook'
+      name: 'facebook',
+      authorization: {
+        params: {
+          response_type: 'code',
+          response_mode: 'query',
+          display: 'popup', // mở dưới dạng popup
+          auth_type: 'reauthenticate', // ép chọn lại tài khoản & nhập lại mật khẩu
+          scope: 'email,public_profile'
+        }
+      }
     })
 
     // ...add more providers here
@@ -40,6 +56,6 @@ export const authOptions = {
       return session
     }
   }
-}
+})
 
-export default NextAuth(authOptions)
+export { handler as GET, handler as POST }
