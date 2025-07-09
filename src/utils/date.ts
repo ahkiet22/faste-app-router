@@ -29,3 +29,7 @@ export const getTimePast = (date: Date, t: any): string => {
     return `${year} ${t('year')}`
   }
 }
+
+export function sum(a: number, b: number) {
+  return a + b
+}
