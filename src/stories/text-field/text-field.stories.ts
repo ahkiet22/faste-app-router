@@ -28,6 +28,7 @@ const meta = {
       control: false
     },
     helperText: { control: { type: 'text' }, defaultValue: '', description: 'helperText of input' },
+    disabled: { description: 'disable input', defaultValue: false, control: { type: 'boolean' } },
     color: {
       description: 'theme of input',
       control: {
@@ -42,7 +43,7 @@ const meta = {
     }
   },
   // Use `fn` to spy on the onClick arg, which will appear in the actions panel once invoked: https://storybook.js.org/docs/essentials/actions#action-args
-  args: { value: '', placeholder: 'Enter input', helperText: '', color: 'primary', onChange: fn() }
+  args: { value: '', placeholder: 'Enter input', helperText: '', color: 'primary', disabled: false, onChange: fn() }
 } satisfies Meta<typeof TextField>
 
 export default meta

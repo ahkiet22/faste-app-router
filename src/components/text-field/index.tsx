@@ -16,7 +16,7 @@ const TextFieldStyle = styled(TextField)<TextFieldProps>(({ theme }) => {
       borderRadius: 8,
       backgroundColor: 'transparent !important',
       // border: `1px solid rgba(${theme.palette.customColors?.main}, 0.2)`,
-      borderColor: `rgba(${theme.palette.customColors?.borderColor}, 0.2)`,
+      borderColor: `rgba(${theme.palette.customColors?.main}, 0.2)`,
       borderStyle: 'solid',
       borderWidth: '1px',
       transition: theme.transitions.create(['border-color', 'box-shadow'], {
