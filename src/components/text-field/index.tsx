@@ -15,12 +15,15 @@ const TextFieldStyle = styled(TextField)<TextFieldProps>(({ theme }) => {
     '& .MuiInputBase-root': {
       borderRadius: 8,
       backgroundColor: 'transparent !important',
-      border: `1px solid rgba(${theme.palette.customColors.main}, 0.2)`,
+      // border: `1px solid rgba(${theme.palette.customColors?.main}, 0.2)`,
+      borderColor: `rgba(${theme.palette.customColors?.borderColor}, 0.2)`,
+      borderStyle: 'solid',
+      borderWidth: '1px',
       transition: theme.transitions.create(['border-color', 'box-shadow'], {
         duration: theme.transitions.duration.shorter
       }),
-      "& .MuiInputBase-inputAdornedEnd": {
-        borderRadius: 8,
+      '& .MuiInputBase-inputAdornedEnd': {
+        borderRadius: 8
       },
       '&:before, &:after': {
         display: 'none'
@@ -29,6 +32,15 @@ const TextFieldStyle = styled(TextField)<TextFieldProps>(({ theme }) => {
         padding: '8px 10px'
       },
       '&.Mui-error': {
+        borderColor: theme.palette.error.main
+      },
+      '&.MuiInputBase-colorSuccess': {
+        borderColor: theme.palette.success.main
+      },
+      '&.MuiInputBase-colorWarning': {
+        borderColor: theme.palette.warning.main
+      },
+      '&.MuiInputBase-colorError': {
         borderColor: theme.palette.error.main
       },
       '&.Mui-focused': {
@@ -80,7 +92,9 @@ const TextFieldStyle = styled(TextField)<TextFieldProps>(({ theme }) => {
 const CustomTextField = (props: TextFieldProps) => {
   const { size = 'small', InputLabelProps, variant = 'filled', ...rests } = props
 
-  return <TextFieldStyle size={size} variant={variant} InputLabelProps={{ ...InputLabelProps, shrink: true }} {...rests} />
+  return (
+    <TextFieldStyle size={size} variant={variant} InputLabelProps={{ ...InputLabelProps, shrink: true }} {...rests} />
+  )
 }
 
 export default CustomTextField
