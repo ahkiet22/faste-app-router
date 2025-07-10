@@ -309,7 +309,7 @@ const LoginPage: NextPage<TProps> = () => {
                     ></path>
                   </svg>
                 </IconButton>
-                <IconButton sx={{ color: theme.palette.error.main }} onClick={() => handleSocialLogin('google')}>
+                <IconButton data-testId="btn-google" sx={{ color: theme.palette.error.main }} onClick={() => handleSocialLogin('google')}>
                   <svg
                     xmlns='http://www.w3.org/2000/svg'
                     aria-hidden='true'

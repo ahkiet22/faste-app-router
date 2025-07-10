@@ -18,7 +18,11 @@ const config: Config = {
   verbose: true,
   moduleNameMapper: {
     // ...
-    '^@/components/(.*)$': '<rootDir>/components/$1'
+    '^@/components/(.*)$': '<rootDir>/components/$1',
+
+    '^.+\\.(css|sass|scss)$': 'identity-obj-proxy',
+ 
+    '^.+\\.(png|jpg|jpeg|gif|webp|avif|ico|bmp|svg)$': `identity-obj-proxy`,
   },
   transformIgnorePatterns: ['/node_modules/', '^.+\\.module\\.(css|sass|scss)$'],
   // The glob patterns Jest uses to detect test files
